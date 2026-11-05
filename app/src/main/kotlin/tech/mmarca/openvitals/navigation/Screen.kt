@@ -318,6 +318,9 @@ sealed class Screen(
     }
     data object Achievements : Screen("achievements", R.string.screen_achievements)
 
+    /** Diario Palestra: calendar, sets from Hevy and progress per exercise. */
+    data object Gym : Screen("gym", R.string.screen_gym)
+
     companion object {
         /** Every screen. `ScreenTitleTest` fails when one is missing. */
         val all: List<Screen> by lazy {
@@ -392,6 +395,7 @@ sealed class Screen(
                 WatchSettings,
                 WatchSendPoint,
                 Achievements,
+                Gym,
             )
         }
 

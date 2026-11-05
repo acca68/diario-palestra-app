@@ -4073,4 +4073,33 @@
     <string name="cycle_hormonal_kind_ring_or_patch">Ring or patch</string>
     <string name="cycle_hormonal_kind_injection">Injection</string>
     <string name="cycle_hormonal_kind_other">Other hormonal method</string>
+
+    <!-- Diario Palestra -->
+    <string name="screen_gym">Gym</string>
+    <string name="cd_gym">Gym</string>
+    <string name="gym_import_title">Sets from Hevy</string>
+    <string name="gym_import_hint">Import Hevy’s CSV export to see exercises, sets and loads.</string>
+    <string name="gym_import_count">%1$d workouts imported. Import again to update.</string>
+    <string name="gym_import_button">Import CSV</string>
+    <string name="gym_import_done">Imported %1$d workouts (%2$d sets), %3$d new.</string>
+    <string name="gym_import_not_hevy">This file is not a Hevy workout export.</string>
+    <string name="gym_import_failed">The file could not be read.</string>
+    <string name="gym_recent_sessions">Recent sessions</string>
+    <string name="gym_stat_week_streak">weeks in a row</string>
+    <string name="gym_stat_rest_days">rest days</string>
+    <string name="gym_stat_month">sessions this month</string>
+    <string name="gym_empty_title">No gym sessions yet</string>
+    <string name="gym_empty_body">Sessions saved in Hevy appear here through Health Connect. Import Hevy’s CSV for the sets.</string>
+    <string name="gym_previous_month">Previous month</string>
+    <string name="gym_next_month">Next month</string>
+    <string name="gym_session_untitled">Workout</string>
+    <string name="gym_minutes">%1$d min</string>
+    <string name="gym_kcal">%1$d kcal</string>
+    <string name="gym_bpm">%1$d bpm</string>
+    <string name="gym_volume">%1$d kg volume</string>
+    <string name="gym_session_no_sets">No sets yet: import Hevy’s CSV.</string>
+    <string name="gym_progress_title">Progress by exercise</string>
+    <string name="gym_progress_empty">Import Hevy’s CSV to follow your loads over time.</string>
+    <string name="gym_progress_hint">Estimated one-rep max of the best set (Epley).</string>
+    <string name="gym_progress_best">Best: %1$s kg on %2$s</string>
 </resources>

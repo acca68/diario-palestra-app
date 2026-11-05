@@ -8,6 +8,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Dashboard
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SelfImprovement
+import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material.icons.outlined.WorkspacePremium
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.LaunchedEffect
@@ -308,6 +309,18 @@ fun AppNavigation(
                 }
             }
             if (currentRoute == Screen.Dashboard.route) {
+                OpenVitalsIconButton(
+                    onClick = {
+                        navController.navigate(Screen.Gym.route) {
+                            launchSingleTop = true
+                        }
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.FitnessCenter,
+                        contentDescription = stringResource(R.string.cd_gym),
+                    )
+                }
                 OpenVitalsIconButton(
                     onClick = {
                         navController.navigate(Screen.Achievements.route) {
@@ -743,6 +756,12 @@ fun AppNavigation(
                     viewModel = sleepDetailViewModel,
                     unitFormatter = unitFormatter,
                     dateTimeFormatterProvider = dateTimeFormatterProvider,
+                )
+            }
+
+            composable(Screen.Gym.route) {
+                tech.mmarca.openvitals.features.gym.GymScreen(
+                    viewModel = hiltViewModel<tech.mmarca.openvitals.features.gym.GymViewModel>(),
                 )
             }
 

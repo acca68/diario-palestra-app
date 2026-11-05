@@ -4036,4 +4036,33 @@
     <string name="cycle_hormonal_kind_ring_or_patch">Anello o cerotto</string>
     <string name="cycle_hormonal_kind_injection">Iniezione</string>
     <string name="cycle_hormonal_kind_other">Altro metodo ormonale</string>
+
+    <!-- Diario Palestra -->
+    <string name="screen_gym">Palestra</string>
+    <string name="cd_gym">Palestra</string>
+    <string name="gym_import_title">Serie da Hevy</string>
+    <string name="gym_import_hint">Importa il CSV esportato da Hevy per vedere esercizi, serie e kg.</string>
+    <string name="gym_import_count">%1$d sedute importate. Importa di nuovo per aggiornare.</string>
+    <string name="gym_import_button">Importa CSV</string>
+    <string name="gym_import_done">Importate %1$d sedute (%2$d serie), %3$d nuove.</string>
+    <string name="gym_import_not_hevy">Questo file non è un’esportazione degli allenamenti di Hevy.</string>
+    <string name="gym_import_failed">Non riesco a leggere il file.</string>
+    <string name="gym_recent_sessions">Sedute recenti</string>
+    <string name="gym_stat_week_streak">settimane di fila</string>
+    <string name="gym_stat_rest_days">giorni di riposo</string>
+    <string name="gym_stat_month">sedute questo mese</string>
+    <string name="gym_empty_title">Ancora nessuna seduta</string>
+    <string name="gym_empty_body">Le sedute salvate in Hevy arrivano qui da Connessione Salute. Importa il CSV di Hevy per le serie.</string>
+    <string name="gym_previous_month">Mese precedente</string>
+    <string name="gym_next_month">Mese successivo</string>
+    <string name="gym_session_untitled">Allenamento</string>
+    <string name="gym_minutes">%1$d min</string>
+    <string name="gym_kcal">%1$d kcal</string>
+    <string name="gym_bpm">%1$d bpm</string>
+    <string name="gym_volume">volume %1$d kg</string>
+    <string name="gym_session_no_sets">Serie non ancora disponibili: importa il CSV di Hevy.</string>
+    <string name="gym_progress_title">Progressi per esercizio</string>
+    <string name="gym_progress_empty">Importa il CSV di Hevy per seguire i carichi nel tempo.</string>
+    <string name="gym_progress_hint">Massimale stimato della serie migliore (formula di Epley).</string>
+    <string name="gym_progress_best">Record: %1$s kg il %2$s</string>
 </resources>
