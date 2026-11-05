@@ -115,6 +115,14 @@ android {
     }
 
     signingConfigs {
+        // Diario Palestra: chiave fissa per le build debug, cosi' ogni nuovo APK
+        // si installa sopra il precedente senza disinstallare.
+        getByName("debug") {
+            storeFile = file("diario-debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         if (hasReleaseSigning) {
             create("release") {
                 storeFile = file(checkNotNull(releaseStoreFilePath))
@@ -127,7 +135,7 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix = ".debug"
+            applicationIdSuffix = ".diario"
             versionNameSuffix = "-debug"
             buildConfigField("boolean", "OPENVITALS_DIAGNOSTICS", "true")
             if (signDebugWithReleaseKey && hasReleaseSigning) {
