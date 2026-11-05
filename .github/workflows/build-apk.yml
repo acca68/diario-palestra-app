@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: build-apk
@@ -33,3 +33,16 @@ jobs:
           name: diario-palestra-apk
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30
+      - name: Pubblica sul link fisso
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -la app/build/outputs/apk/debug/
+          apk=$(ls app/build/outputs/apk/debug/*.apk | grep -i universal || true)
+          [ -n "$apk" ] || apk=$(ls app/build/outputs/apk/debug/*.apk | head -1)
+          cp "$apk" diario-palestra.apk
+          gh release delete ultima --yes --cleanup-tag || true
+          gh release create ultima diario-palestra.apk \
+            --title "Diario Palestra - ultima versione" \
+            --notes "Compilata dal commit ${GITHUB_SHA::7} il $(date -u +%d.%m.%Y)." \
+            --latest
