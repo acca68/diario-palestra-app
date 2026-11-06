@@ -38,6 +38,7 @@ data class GymUiState(
     val progress: List<GymProgressPoint> = emptyList(),
     val importedCount: Int = 0,
     val musclePeriodDays: Int = 7,
+    val trainerDays: Set<LocalDate> = emptySet(),
     val setsPerMuscle: Map<MuscleGroup, Double> = emptyMap(),
     val importMessage: GymImportMessage? = null,
     val error: ScreenError? = null,
@@ -52,6 +53,7 @@ data class GymUiState(
 class GymViewModel @Inject constructor(
     private val activityRepository: ActivityRepository,
     private val importStore: GymImportStore,
+    private val trainerStore: TrainerStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GymUiState())
@@ -79,6 +81,7 @@ class GymViewModel @Inject constructor(
                     GymSessions.build(workouts, imported) to imported.size
                 }
             }.onSuccess { (sessions, importedCount) ->
+                val trainerDays = runCatching { trainerStore.load().lessonDates }.getOrDefault(emptySet())
                 _uiState.update { state ->
                     val exercises = GymSessions.progressExercises(sessions)
                     val selected = state.selectedExercise?.takeIf { it in exercises } ?: exercises.firstOrNull()
@@ -91,6 +94,7 @@ class GymViewModel @Inject constructor(
                         progress = selected?.let { GymSessions.progress(sessions, it) }.orEmpty(),
                         importedCount = importedCount,
                         setsPerMuscle = musclesFor(sessions, state.musclePeriodDays),
+                        trainerDays = trainerDays,
                     )
                 }
             }.onFailure { error ->

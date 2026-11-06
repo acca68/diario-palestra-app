@@ -160,3 +160,31 @@ class BodyReportTest {
         assertNull(BodyReports.change(reports, BodyField.FAT_PERCENT)!!.delta)
     }
 }
+
+class TrainerDataTest {
+
+    @Test
+    fun countsRemainingLessonsAndSpending() {
+        val data = TrainerData(
+            packages = listOf(TrainerPackage("p", LocalDate.of(2026, 10, 1), lessons = 10, amountChf = 600.0)),
+            lessons = listOf(
+                TrainerLesson("a", LocalDate.of(2026, 10, 11)),
+                TrainerLesson("b", LocalDate.of(2026, 10, 18)),
+                TrainerLesson("c", LocalDate.of(2026, 10, 25), costChf = 70.0, extra = true),
+            ),
+        )
+        assertEquals(10, data.bought)
+        assertEquals(2, data.used)
+        assertEquals(8, data.remaining)
+        assertEquals(670.0, data.spentChf, 0.01)
+        assertNull(TrainerData().remaining)
+    }
+
+    @Test
+    fun readsDatesAsTyped() {
+        assertEquals(LocalDate.of(2026, 11, 6), FormValues.date("6.11.2026"))
+        assertEquals(LocalDate.of(2026, 11, 6), FormValues.date("06/11/2026"))
+        assertEquals(java.time.LocalTime.of(9, 5), FormValues.time("9.05"))
+        assertEquals(12.5, FormValues.number("12,5")!!, 0.001)
+    }
+}

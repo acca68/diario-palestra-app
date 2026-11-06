@@ -97,6 +97,7 @@ fun GymScreen(viewModel: GymViewModel) {
                     month = state.month,
                     sessionsByDay = state.sessionsByDay,
                     selectedDay = state.selectedDay,
+                    trainerDays = state.trainerDays,
                     onPreviousMonth = viewModel::previousMonth,
                     onNextMonth = viewModel::nextMonth,
                     onSelectDay = viewModel::selectDay,

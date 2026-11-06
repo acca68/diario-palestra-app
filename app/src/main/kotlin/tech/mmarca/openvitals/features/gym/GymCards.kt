@@ -57,6 +57,7 @@ internal fun GymCalendarCard(
     month: YearMonth,
     sessionsByDay: Map<LocalDate, List<GymSession>>,
     selectedDay: LocalDate?,
+    trainerDays: Set<LocalDate>,
     onPreviousMonth: () -> Unit,
     onNextMonth: () -> Unit,
     onSelectDay: (LocalDate) -> Unit,
@@ -107,6 +108,7 @@ internal fun GymCalendarCard(
                                     sessions = sessionsByDay[date].orEmpty(),
                                     isToday = date == today,
                                     isSelected = date == selectedDay,
+                                    withTrainer = date in trainerDays,
                                     isFuture = date.isAfter(today),
                                     onClick = { onSelectDay(date) },
                                 )
@@ -126,6 +128,7 @@ private fun GymCalendarDay(
     isToday: Boolean,
     isSelected: Boolean,
     isFuture: Boolean,
+    withTrainer: Boolean,
     onClick: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
@@ -144,6 +147,7 @@ private fun GymCalendarDay(
             isToday -> circle.border(1.5.dp, colors.primary, CircleShape)
             else -> circle
         }
+        if (withTrainer) circle = circle.border(2.5.dp, colors.tertiary, CircleShape)
         if (isSelected) circle = circle.border(2.dp, colors.onSurface, CircleShape)
         Box(modifier = circle, contentAlignment = Alignment.Center) {
             Text(
