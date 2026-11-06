@@ -760,9 +760,7 @@ fun AppNavigation(
             }
 
             composable(Screen.Gym.route) {
-                tech.mmarca.openvitals.features.gym.GymScreen(
-                    viewModel = hiltViewModel<tech.mmarca.openvitals.features.gym.GymViewModel>(),
-                )
+                tech.mmarca.openvitals.features.gym.DiarioScreen()
             }
 
             composable(Screen.Achievements.route) {

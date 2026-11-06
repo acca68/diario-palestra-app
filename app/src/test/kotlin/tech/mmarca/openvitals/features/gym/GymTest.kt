@@ -136,3 +136,27 @@ object GymTestData {
         "Gambe","Oct 28, 2026, 7:57 PM","Oct 28, 2026, 8:52 PM","","Leg Extension (Macchina)",,"",0,"warmup",63,12,,,
     """.trimIndent()
 }
+
+class BodyReportTest {
+
+    @Test
+    fun parsesImportFileAndComputesChanges() {
+        val reports = BodyReportStore.parse(
+            """
+            {"reports":[
+              {"date":"2026-08-29","time":"12:58","values":{"WEIGHT":93.0,"ARM_RIGHT":39.49,"ARM_LEFT":38.97,"UNKNOWN":1}},
+              {"date":"2026-11-01","values":{"WEIGHT":91.4,"FAT_PERCENT":24.9}}
+            ]}
+            """.trimIndent(),
+        )
+        assertEquals(2, reports.size)
+        assertEquals(java.time.LocalTime.of(12, 58), reports.first().time)
+        assertEquals(39.49, reports.first()[BodyField.ARM_RIGHT]!!, 0.001)
+        val weight = BodyReports.change(reports, BodyField.WEIGHT)!!
+        assertEquals(91.4, weight.value, 0.001)
+        assertEquals(-1.6, weight.delta!!, 0.001)
+        assertEquals(LocalDate.of(2026, 8, 29), weight.previousDate)
+        // Only one report has body fat: no previous value to compare with.
+        assertNull(BodyReports.change(reports, BodyField.FAT_PERCENT)!!.delta)
+    }
+}

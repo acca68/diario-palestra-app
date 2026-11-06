@@ -313,7 +313,7 @@ internal fun GymProgressCard(
 }
 
 @Composable
-private fun GymProgressChart(points: List<GymProgressPoint>) {
+internal fun GymProgressChart(points: List<GymProgressPoint>, unit: String = "kg") {
     val line = MaterialTheme.colorScheme.primary
     val grid = MaterialTheme.colorScheme.outlineVariant
     val minValue = points.minOf { it.oneRepMaxKg }
@@ -323,8 +323,8 @@ private fun GymProgressChart(points: List<GymProgressPoint>) {
             modifier = Modifier.height(160.dp).padding(end = 6.dp),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text("${maxValue.kg()} kg", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("${minValue.kg()} kg", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("${maxValue.kg()} $unit", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("${minValue.kg()} $unit", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         Canvas(modifier = Modifier.weight(1f).height(160.dp)) {
             val pad = 8.dp.toPx()

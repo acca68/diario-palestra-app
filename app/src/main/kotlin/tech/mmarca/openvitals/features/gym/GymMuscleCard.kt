@@ -35,7 +35,7 @@ import kotlin.math.roundToInt
 import tech.mmarca.openvitals.R
 import tech.mmarca.openvitals.ui.components.OpenVitalsCard
 
-private class Outline(val group: MuscleGroup?, val points: FloatArray)
+internal class Outline(val group: MuscleGroup?, val points: FloatArray)
 
 private fun parse(views: List<Pair<String, List<String>>>): List<Outline> =
     views.flatMap { (name, polygons) ->
@@ -47,8 +47,8 @@ private fun parse(views: List<Pair<String, List<String>>>): List<Outline> =
         }
     }
 
-private val frontOutlines: List<Outline> by lazy { parse(MuscleMapData.front) }
-private val backOutlines: List<Outline> by lazy { parse(MuscleMapData.back) }
+internal val frontOutlines: List<Outline> by lazy { parse(MuscleMapData.front) }
+internal val backOutlines: List<Outline> by lazy { parse(MuscleMapData.back) }
 
 private fun Double.sets(): String {
     val rounded = (this * 2).roundToInt() / 2.0
@@ -171,7 +171,7 @@ internal fun GymMuscleCard(
 }
 
 @Composable
-private fun BodyFigure(outlines: List<Outline>, colorOf: (MuscleGroup?) -> Color, gap: Color) {
+internal fun BodyFigure(outlines: List<Outline>, colorOf: (MuscleGroup?) -> Color, gap: Color) {
     Canvas(
         modifier = Modifier
             .fillMaxWidth()
