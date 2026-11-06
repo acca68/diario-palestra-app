@@ -8,6 +8,7 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import kotlin.math.abs
+import androidx.health.connect.client.records.ExerciseSessionRecord
 import tech.mmarca.openvitals.domain.model.ExerciseData
 
 /**
@@ -18,11 +19,14 @@ import tech.mmarca.openvitals.domain.model.ExerciseData
  * - The watch's session that overlaps it (Garmin's HIIT): heart rate and calories.
  *
  * MyFitnessPal re-writes other apps' sessions shifted by hours, so it is never a match.
+ * Hevy is often filled in after the workout, so when no watch session overlaps it,
+ * the watch's gym session of the same day is used, and its times are the real ones.
  */
 object GymSessions {
 
     private const val MATCH_TOLERANCE_MINUTES = 3L
     private const val MIN_OVERLAP_SHARE = 0.4
+    private const val MIN_GYM_MINUTES = 15L
 
     fun build(
         healthConnect: List<ExerciseData>,
@@ -32,6 +36,7 @@ object GymSessions {
         val hevy = healthConnect.filter { it.isFrom("hevy") }
         val watch = healthConnect.filter { !it.isFrom("hevy") && !it.isFrom("myfitnesspal") }
         val usedImports = mutableSetOf<String>()
+        val usedWatch = mutableSetOf<String>()
 
         val fromHealthConnect = hevy.map { session ->
             val start = LocalDateTime.ofInstant(session.startTime, zone)
@@ -48,6 +53,7 @@ object GymSessions {
                 exercises = match?.exercises.orEmpty(),
                 fallbackCalories = session.totalCaloriesKcal,
                 watch = watch,
+                usedWatch = usedWatch,
                 zone = zone,
             )
         }
@@ -61,6 +67,7 @@ object GymSessions {
                     exercises = workout.exercises,
                     fallbackCalories = null,
                     watch = watch,
+                    usedWatch = usedWatch,
                     zone = zone,
                 )
             }
@@ -74,15 +81,21 @@ object GymSessions {
         exercises: List<ImportedExercise>,
         fallbackCalories: Double?,
         watch: List<ExerciseData>,
+        usedWatch: MutableSet<String>,
         zone: ZoneId,
     ): GymSession {
-        val watchMatch = end?.let { bestOverlap(start, it, watch, zone) }
+        val available = watch.filter { it.id !in usedWatch }
+        val overlapping = end?.let { bestOverlap(start, it, available, zone) }
+        val watchMatch = overlapping ?: sameDayGymSession(start, available, zone)
+        watchMatch?.let { usedWatch += it.id }
+        val realStart = watchMatch?.let { LocalDateTime.ofInstant(it.startTime, zone) } ?: start
+        val realEnd = watchMatch?.let { LocalDateTime.ofInstant(it.endTime, zone) } ?: end
         return GymSession(
             key = start.withSecond(0).withNano(0).toString(),
             title = title,
             date = start.toLocalDate(),
-            start = start,
-            durationMinutes = end?.let { Duration.between(start, it).toMinutes() }?.takeIf { it > 0 },
+            start = realStart,
+            durationMinutes = realEnd?.let { Duration.between(realStart, it).toMinutes() }?.takeIf { it > 0 },
             caloriesKcal = watchMatch?.totalCaloriesKcal ?: fallbackCalories?.takeIf { it > 0 },
             averageHeartRateBpm = watchMatch?.averageHeartRateBpm,
             watchSource = watchMatch?.source,
@@ -111,6 +124,24 @@ object GymSessions {
             .maxByOrNull { (_, share) -> share }
             ?.first
     }
+
+    private val notGym = setOf(
+        ExerciseSessionRecord.EXERCISE_TYPE_WALKING,
+        ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
+        ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL,
+        ExerciseSessionRecord.EXERCISE_TYPE_BIKING,
+        ExerciseSessionRecord.EXERCISE_TYPE_HIKING,
+        ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_OPEN_WATER,
+        ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL,
+    )
+
+    /** The watch's gym session of the same day, the closest in time when there are more. */
+    private fun sameDayGymSession(start: LocalDateTime, candidates: List<ExerciseData>, zone: ZoneId): ExerciseData? =
+        candidates
+            .filter { it.exerciseType !in notGym }
+            .filter { LocalDateTime.ofInstant(it.startTime, zone).toLocalDate() == start.toLocalDate() }
+            .filter { Duration.between(it.startTime, it.endTime).toMinutes() >= MIN_GYM_MINUTES }
+            .minByOrNull { abs(Duration.between(LocalDateTime.ofInstant(it.startTime, zone), start).toMinutes()) }
 
     private fun ExerciseData.isFrom(app: String): Boolean = source.contains(app, ignoreCase = true)
 

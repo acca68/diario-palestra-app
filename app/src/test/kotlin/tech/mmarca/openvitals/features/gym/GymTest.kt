@@ -53,6 +53,22 @@ class GymTest {
     }
 
     @Test
+    fun hevyFilledInLaterJoinsTheWatchSessionOfTheSameDay() {
+        val imported = HevyCsvParser.parse(csv).workouts
+        fun at(h: Int, m: Int): Instant = LocalDateTime.of(2026, 11, 2, h, m).atZone(zone).toInstant()
+        val walk = exercise("w", "com.garmin.android.apps.connectmobile", at(13, 50), at(13, 56), kcal = 30.0)
+            .copy(exerciseType = androidx.health.connect.client.records.ExerciseSessionRecord.EXERCISE_TYPE_WALKING)
+        val hiit = exercise("h", "com.garmin.android.apps.connectmobile", at(17, 36), at(18, 56), kcal = 588.0, hr = 112)
+        val upper = GymSessions.build(listOf(walk, hiit), imported, zone).first()
+
+        assertEquals(588.0, upper.caloriesKcal!!, 0.01)
+        assertEquals(112L, upper.averageHeartRateBpm)
+        assertEquals(LocalDateTime.of(2026, 11, 2, 17, 36), upper.start)
+        assertEquals(80L, upper.durationMinutes)
+        assertEquals(LocalDate.of(2026, 11, 2), upper.date)
+    }
+
+    @Test
     fun progressAndStats() {
         val sessions = GymSessions.build(emptyList(), HevyCsvParser.parse(csv).workouts, zone)
         assertEquals(listOf("Leg Extension (Macchina)", "Panca Piana (Multipower)"), GymSessions.progressExercises(sessions))
