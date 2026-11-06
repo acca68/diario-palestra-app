@@ -14,14 +14,7 @@ class GymTest {
 
     private val zone = ZoneId.of("Europe/Zurich")
 
-    private val csv = """
-        "title","start_time","end_time","description","exercise_title","superset_id","exercise_notes","set_index","set_type","weight_kg","reps","distance_km","duration_seconds","rpe"
-        "Upper Body","2 nov 2026, 19:15","2 nov 2026, 20:15","","Panca Piana (Multipower)",,"",0,"normal",35,12,,,
-        "Upper Body","2 nov 2026, 19:15","2 nov 2026, 20:15","","Panca Piana (Multipower)",,"",1,"normal",40,10,,,
-        "Upper Body","2 nov 2026, 19:15","2 nov 2026, 20:15","","Trazione Supina (Assistita)",,"",0,"normal",35,10,,,
-        "Upper Body","2 nov 2026, 19:15","2 nov 2026, 20:15","","Tapis Roulant",,"",0,"normal",,,1.5,911,
-        "Gambe","Oct 28, 2026, 7:57 PM","Oct 28, 2026, 8:52 PM","","Leg Extension (Macchina)",,"",0,"warmup",63,12,,,
-    """.trimIndent()
+    private val csv = GymTestData.CSV
 
     @Test
     fun parsesItalianAndEnglishDatesAndGroupsSets() {
@@ -85,4 +78,45 @@ class GymTest {
             totalCaloriesKcal = kcal,
             averageHeartRateBpm = hr,
         )
+}
+
+class GymMusclesTest {
+
+    @Test
+    fun matchesHevyExerciseNames() {
+        fun primary(name: String) = GymMuscles.musclesOf(name)?.primary
+        assertEquals(listOf(MuscleGroup.HAMSTRINGS), primary("Leg Curl Seduto (Macchina)"))
+        assertEquals(listOf(MuscleGroup.BICEPS), primary("Bicipiti Martello (Cavo)"))
+        assertEquals(listOf(MuscleGroup.TRICEPS), primary("Dip Tricipiti (Assistito)"))
+        assertEquals(listOf(MuscleGroup.SHOULDERS), primary("Croci Inverse Deltoide Posteriore (Macchina)"))
+        assertEquals(listOf(MuscleGroup.CHEST), primary("Butterfly (Pec Deck)"))
+        assertEquals(listOf(MuscleGroup.LATS), primary("Lat Pulldown Braccia Dritte (Cavo)"))
+        assertEquals(listOf(MuscleGroup.OBLIQUES), primary("Russian Twist (Con Peso Aggiunto)"))
+        assertEquals(listOf(MuscleGroup.ADDUCTORS), primary("Adduzione Anche (Macchina)"))
+        assertEquals(listOf(MuscleGroup.GLUTES), primary("Abduzione Anche (Macchina)"))
+        assertNull(GymMuscles.musclesOf("Tapis Roulant"))
+        assertNull(GymMuscles.musclesOf("Vogatore"))
+    }
+
+    @Test
+    fun countsSetsInPeriod() {
+        val sessions = GymSessions.build(emptyList(), HevyCsvParser.parse(GymTestData.CSV).workouts, java.time.ZoneId.of("Europe/Zurich"))
+        val sets = GymMuscles.setsPerMuscle(sessions, LocalDate.of(2026, 11, 1), LocalDate.of(2026, 11, 7))
+        // Two bench sets: chest 2, triceps and shoulders half each; the assisted pull-up counts for the lats.
+        assertEquals(2.0, sets[MuscleGroup.CHEST]!!, 0.01)
+        assertEquals(1.0, sets[MuscleGroup.TRICEPS]!!, 0.01)
+        assertEquals(1.0, sets[MuscleGroup.LATS]!!, 0.01)
+        assertNull(sets[MuscleGroup.QUADS])
+    }
+}
+
+object GymTestData {
+    val CSV = """
+        "title","start_time","end_time","description","exercise_title","superset_id","exercise_notes","set_index","set_type","weight_kg","reps","distance_km","duration_seconds","rpe"
+        "Upper Body","2 nov 2026, 19:15","2 nov 2026, 20:15","","Panca Piana (Multipower)",,"",0,"normal",35,12,,,
+        "Upper Body","2 nov 2026, 19:15","2 nov 2026, 20:15","","Panca Piana (Multipower)",,"",1,"normal",40,10,,,
+        "Upper Body","2 nov 2026, 19:15","2 nov 2026, 20:15","","Trazione Supina (Assistita)",,"",0,"normal",35,10,,,
+        "Upper Body","2 nov 2026, 19:15","2 nov 2026, 20:15","","Tapis Roulant",,"",0,"normal",,,1.5,911,
+        "Gambe","Oct 28, 2026, 7:57 PM","Oct 28, 2026, 8:52 PM","","Leg Extension (Macchina)",,"",0,"warmup",63,12,,,
+    """.trimIndent()
 }

@@ -4102,4 +4102,27 @@
     <string name="gym_progress_empty">Import Hevy’s CSV to follow your loads over time.</string>
     <string name="gym_progress_hint">Estimated one-rep max of the best set (Epley).</string>
     <string name="gym_progress_best">Best: %1$s kg on %2$s</string>
+    <string name="gym_muscles_title">Muscles trained</string>
+    <string name="gym_muscles_days">%1$d days</string>
+    <string name="gym_muscles_front">Front</string>
+    <string name="gym_muscles_back">Back</string>
+    <string name="gym_muscles_sets_title">Sets per muscle group</string>
+    <string name="gym_muscles_empty">No sets in this period. Import Hevy’s CSV to fill the map.</string>
+    <string name="gym_muscles_untrained">Not trained: %1$s.</string>
+    <string name="gym_muscles_hint">Exercises are matched to muscles by name; secondary muscles count half a set. Cardio is not counted.</string>
+    <string name="gym_muscle_chest">Chest</string>
+    <string name="gym_muscle_shoulders">Shoulders</string>
+    <string name="gym_muscle_biceps">Biceps</string>
+    <string name="gym_muscle_triceps">Triceps</string>
+    <string name="gym_muscle_forearms">Forearms</string>
+    <string name="gym_muscle_abs">Abs</string>
+    <string name="gym_muscle_obliques">Obliques</string>
+    <string name="gym_muscle_traps">Traps</string>
+    <string name="gym_muscle_lats">Lats</string>
+    <string name="gym_muscle_lower_back">Lower back</string>
+    <string name="gym_muscle_glutes">Glutes</string>
+    <string name="gym_muscle_quads">Quadriceps</string>
+    <string name="gym_muscle_hamstrings">Hamstrings</string>
+    <string name="gym_muscle_adductors">Adductors</string>
+    <string name="gym_muscle_calves">Calves</string>
 </resources>

@@ -108,6 +108,14 @@ fun GymScreen(viewModel: GymViewModel) {
                 }
             }
             item {
+                GymMuscleCard(
+                    periodDays = state.musclePeriodDays,
+                    setsPerMuscle = state.setsPerMuscle,
+                    trainedDays = state.trainedDays,
+                    onPeriod = viewModel::selectMusclePeriod,
+                )
+            }
+            item {
                 GymProgressCard(
                     exercises = state.progressExercises,
                     selected = state.selectedExercise,

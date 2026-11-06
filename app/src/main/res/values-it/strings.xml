@@ -4065,4 +4065,27 @@
     <string name="gym_progress_empty">Importa il CSV di Hevy per seguire i carichi nel tempo.</string>
     <string name="gym_progress_hint">Massimale stimato della serie migliore (formula di Epley).</string>
     <string name="gym_progress_best">Record: %1$s kg il %2$s</string>
+    <string name="gym_muscles_title">Muscoli allenati</string>
+    <string name="gym_muscles_days">%1$d giorni</string>
+    <string name="gym_muscles_front">Fronte</string>
+    <string name="gym_muscles_back">Retro</string>
+    <string name="gym_muscles_sets_title">Serie per gruppo muscolare</string>
+    <string name="gym_muscles_empty">Nessuna serie nel periodo. Importa il CSV di Hevy per riempire la mappa.</string>
+    <string name="gym_muscles_untrained">Non allenati: %1$s.</string>
+    <string name="gym_muscles_hint">Gli esercizi sono assegnati ai muscoli in base al nome; i muscoli secondari contano mezza serie. Il cardio non è conteggiato.</string>
+    <string name="gym_muscle_chest">Petto</string>
+    <string name="gym_muscle_shoulders">Spalle</string>
+    <string name="gym_muscle_biceps">Bicipiti</string>
+    <string name="gym_muscle_triceps">Tricipiti</string>
+    <string name="gym_muscle_forearms">Avambracci</string>
+    <string name="gym_muscle_abs">Addome</string>
+    <string name="gym_muscle_obliques">Obliqui</string>
+    <string name="gym_muscle_traps">Trapezi</string>
+    <string name="gym_muscle_lats">Dorsali</string>
+    <string name="gym_muscle_lower_back">Lombari</string>
+    <string name="gym_muscle_glutes">Glutei</string>
+    <string name="gym_muscle_quads">Quadricipiti</string>
+    <string name="gym_muscle_hamstrings">Femorali</string>
+    <string name="gym_muscle_adductors">Adduttori</string>
+    <string name="gym_muscle_calves">Polpacci</string>
 </resources>

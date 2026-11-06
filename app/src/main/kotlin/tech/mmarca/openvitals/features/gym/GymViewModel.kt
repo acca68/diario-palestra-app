@@ -37,10 +37,13 @@ data class GymUiState(
     val selectedExercise: String? = null,
     val progress: List<GymProgressPoint> = emptyList(),
     val importedCount: Int = 0,
+    val musclePeriodDays: Int = 7,
+    val setsPerMuscle: Map<MuscleGroup, Double> = emptyMap(),
     val importMessage: GymImportMessage? = null,
     val error: ScreenError? = null,
 ) {
     val sessionsByDay: Map<LocalDate, List<GymSession>> by lazy { sessions.groupBy { it.date } }
+    val trainedDays: Set<LocalDate> by lazy { sessions.map { it.date }.toSet() }
     val selectedSessions: List<GymSession>
         get() = selectedDay?.let { sessionsByDay[it] }.orEmpty()
 }
@@ -87,6 +90,7 @@ class GymViewModel @Inject constructor(
                         selectedExercise = selected,
                         progress = selected?.let { GymSessions.progress(sessions, it) }.orEmpty(),
                         importedCount = importedCount,
+                        setsPerMuscle = musclesFor(sessions, state.musclePeriodDays),
                     )
                 }
             }.onFailure { error ->
@@ -109,6 +113,15 @@ class GymViewModel @Inject constructor(
             _uiState.update { it.copy(isImporting = false, importMessage = message) }
             load()
         }
+    }
+
+    fun selectMusclePeriod(days: Int) = _uiState.update { state ->
+        state.copy(musclePeriodDays = days, setsPerMuscle = musclesFor(state.sessions, days))
+    }
+
+    private fun musclesFor(sessions: List<GymSession>, days: Int): Map<MuscleGroup, Double> {
+        val today = LocalDate.now()
+        return GymMuscles.setsPerMuscle(sessions, today.minusDays(days - 1L), today)
     }
 
     fun dismissImportMessage() = _uiState.update { it.copy(importMessage = null) }
