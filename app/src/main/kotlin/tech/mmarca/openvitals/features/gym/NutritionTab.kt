@@ -238,18 +238,28 @@ fun NutritionTab(viewModel: NutritionViewModel) {
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        item {
+            val logged = state.loggedDays
+            val next = state.nextVisit
+            DiaryHeroCard(
+                title = stringResource(R.string.diario_tab_nutrition),
+                subtitle = next?.let {
+                    stringResource(R.string.nutri_next_in, it.format(visitDate), ChronoUnit.DAYS.between(LocalDate.now(), it))
+                } ?: stringResource(R.string.nutri_no_next),
+                stats = listOf(
+                    (state.plan?.kcal?.roundToInt()?.toString() ?: "—") to stringResource(R.string.nutri_hero_plan),
+                    (if (logged.isEmpty()) "—" else logged.map { it.energyKcal }.average().roundToInt().toString()) to stringResource(R.string.nutri_hero_avg),
+                    (if (logged.isEmpty()) "—" else logged.map { it.proteinGrams }.average().roundToInt().toString()) to stringResource(R.string.nutri_hero_protein),
+                ),
+                action = { DiaryPill(stringResource(R.string.nutri_visit), Icons.Outlined.Add) { viewModel.open(null) } },
+            )
+        }
         item { DiarySectionHeader(stringResource(R.string.nutri_plan)) }
         item { PlanCard(state.plan, state.nextVisit) }
         item { DiarySectionHeader(stringResource(R.string.nutri_week)) }
         item { WeekCard(state.plan, state.days, state.loggedDays) }
         item {
-            DiarySectionHeader(stringResource(R.string.nutri_visits)) {
-                TextButton(onClick = { viewModel.open(null) }) {
-                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text(stringResource(R.string.diary_add))
-                }
-            }
+            DiarySectionHeader(stringResource(R.string.nutri_visits))
         }
         items(state.visits, key = { it.id }) { visit ->
             OpenVitalsCard(modifier = Modifier.fillMaxWidth().clickable { viewModel.open(visit) }) {

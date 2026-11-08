@@ -16,6 +16,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.sp
 import tech.mmarca.openvitals.ui.components.OpenVitalsCard
 
@@ -35,11 +46,10 @@ internal fun DiarySectionHeader(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text(
-            text = title.uppercase(),
-            style = MaterialTheme.typography.labelLarge,
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            letterSpacing = 1.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
         )
         action?.invoke(this)
@@ -84,5 +94,63 @@ internal fun DiaryNote(text: String, modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(16.dp),
         )
+    }
+}
+
+/**
+ * The lead card of a tab, deep teal with white text, as in the reference: a title, a
+ * line under it, up to four headline figures and the tab's main action as an orange pill.
+ */
+@Composable
+internal fun DiaryHeroCard(
+    title: String,
+    subtitle: String? = null,
+    stats: List<Pair<String, String>> = emptyList(),
+    action: (@Composable () -> Unit)? = null,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.large)
+            .background(Brush.linearGradient(listOf(DiaryColors.heroStart, DiaryColors.heroEnd)))
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, color = DiaryColors.onHero)
+                subtitle?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = DiaryColors.onHeroMuted)
+                }
+            }
+            action?.invoke()
+        }
+        if (stats.isNotEmpty()) {
+            Row {
+                stats.forEach { (value, label) ->
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold, color = DiaryColors.onHero)
+                        Text(label, style = MaterialTheme.typography.bodySmall, color = DiaryColors.onHeroMuted)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** The orange pill of the reference, for a tab's main action. */
+@Composable
+internal fun DiaryPill(text: String, icon: ImageVector? = null, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        shape = CircleShape,
+        colors = ButtonDefaults.buttonColors(containerColor = DiaryColors.orange, contentColor = DiaryColors.onOrange),
+        contentPadding = ButtonDefaults.ContentPadding,
+    ) {
+        if (icon != null) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+        }
+        Text(text, fontWeight = FontWeight.SemiBold)
     }
 }

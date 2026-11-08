@@ -95,19 +95,20 @@ fun BodyTab(viewModel: BodyViewModel) {
     ) {
         val latest = state.latest
         item {
-            DiarySectionHeader(
-                if (latest != null) {
-                    stringResource(R.string.body_latest, latest.date.format(dateFormat))
-                } else {
-                    stringResource(R.string.diario_tab_body)
+            val labels = listOf(BodyField.WEIGHT, BodyField.FAT_PERCENT, BodyField.MUSCLE_MASS)
+            DiaryHeroCard(
+                title = stringResource(R.string.diario_tab_body),
+                subtitle = latest?.let { stringResource(R.string.body_latest, it.date.format(dateFormat)) }
+                    ?: stringResource(R.string.body_empty_short),
+                stats = labels.mapNotNull { field ->
+                    val change = BodyReports.change(state.reports, field) ?: return@mapNotNull null
+                    val delta = change.delta?.takeIf { it != 0.0 }
+                        ?.let { " · " + (if (it > 0) "+" else "−") + kotlin.math.abs(it).bodyNumber() }
+                        .orEmpty()
+                    "${change.value.bodyNumber()} ${field.unit}".trim() to stringResource(field.labelRes) + delta
                 },
-            ) {
-                TextButton(onClick = viewModel::newReport) {
-                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text(stringResource(R.string.diary_add))
-                }
-            }
+                action = { DiaryPill(stringResource(R.string.diary_add), Icons.Outlined.Add, viewModel::newReport) },
+            )
         }
         if (latest == null) {
             if (!state.isLoading) item { DiaryNote(stringResource(R.string.body_empty)) }
@@ -120,6 +121,7 @@ fun BodyTab(viewModel: BodyViewModel) {
             }
             return@LazyColumn
         }
+        item { DiarySectionHeader(stringResource(R.string.body_details)) }
         item { BodySummaryCard(state.reports) }
         item {
             DiarySectionHeader(stringResource(R.string.body_map_title)) {
@@ -193,7 +195,7 @@ private fun DeltaText(field: BodyField, change: BodyChange?) {
 @Composable
 private fun BodySummaryCard(reports: List<BodyReport>) {
     val fields = listOf(
-        BodyField.WEIGHT, BodyField.FAT_PERCENT, BodyField.MUSCLE_MASS,
+        BodyField.SKELETAL_MUSCLE, BodyField.LEAN_MASS, BodyField.WATER,
         BodyField.VISCERAL, BodyField.BMR, BodyField.SCORE,
     )
     OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {

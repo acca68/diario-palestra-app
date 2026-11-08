@@ -4248,4 +4248,13 @@
     <string name="backup_restored">Diario restored.</string>
     <string name="backup_not_backup">This file is not a Diario backup.</string>
     <string name="backup_failed">Something went wrong: the file was not saved or read.</string>
+    <string name="gym_import_short">CSV</string>
+    <string name="body_empty_short">No measurements yet</string>
+    <string name="body_details">Details</string>
+    <string name="nutri_no_next">No visit booked</string>
+    <string name="nutri_hero_plan">kcal plan</string>
+    <string name="nutri_hero_avg">kcal average 7 d</string>
+    <string name="nutri_hero_protein">g protein average</string>
+    <string name="nutri_visit">Visit</string>
+    <string name="diary_theme">Diary theme: automatic, light, dark</string>
 </resources>

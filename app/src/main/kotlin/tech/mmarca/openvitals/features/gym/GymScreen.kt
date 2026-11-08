@@ -74,14 +74,26 @@ fun GymScreen(viewModel: GymViewModel) {
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item { DiarySectionHeader(stringResource(R.string.diary_section_summary)) }
             item {
-                DiaryStatsCard(
-                    listOf(
+                DiaryHeroCard(
+                    title = stringResource(R.string.diario_tab_gym),
+                    subtitle = if (state.importedCount > 0) {
+                        stringResource(R.string.gym_import_count, state.importedCount)
+                    } else {
+                        stringResource(R.string.gym_import_hint)
+                    },
+                    stats = listOf(
                         state.stats.weekStreak.toString() to stringResource(R.string.gym_stat_week_streak),
                         (state.stats.restDays?.toString() ?: "–") to stringResource(R.string.gym_stat_rest_days),
                         state.stats.sessionsThisMonth.toString() to stringResource(R.string.gym_stat_month),
                     ),
+                    action = {
+                        if (state.isImporting) {
+                            CircularProgressIndicator(modifier = Modifier.size(28.dp), color = DiaryColors.onHero)
+                        } else {
+                            DiaryPill(stringResource(R.string.gym_import_short), Icons.Outlined.FileUpload) { picker.launch(arrayOf("*/*")) }
+                        }
+                    },
                 )
             }
             state.error?.let { error ->
@@ -140,30 +152,7 @@ fun GymScreen(viewModel: GymViewModel) {
                     onSelect = viewModel::selectExercise,
                 )
             }
-            item {
-                DiarySectionHeader(stringResource(R.string.gym_recent_sessions)) {
-                    if (state.isImporting) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                    } else {
-                        TextButton(onClick = { picker.launch(arrayOf("*/*")) }) {
-                            Icon(Icons.Outlined.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text(stringResource(R.string.gym_import_button))
-                        }
-                    }
-                }
-            }
-            item {
-                Text(
-                    text = if (state.importedCount > 0) {
-                        stringResource(R.string.gym_import_count, state.importedCount)
-                    } else {
-                        stringResource(R.string.gym_import_hint)
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            item { DiarySectionHeader(stringResource(R.string.gym_recent_sessions)) }
             if (state.sessions.isEmpty()) {
                 item { GymEmptyCard() }
             } else {

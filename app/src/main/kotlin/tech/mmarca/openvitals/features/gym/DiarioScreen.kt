@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.BrightnessAuto
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.SaveAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -27,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -65,12 +69,35 @@ fun DiarioScreen() {
             },
         )
     }
+    val context = LocalContext.current
+    var themeMode by remember { mutableStateOf(DiaryThemePrefs.load(context)) }
+    DiaryTheme(themeMode) {
     Column(modifier = Modifier.fillMaxSize()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            PrimaryScrollableTabRow(selectedTabIndex = tab, modifier = Modifier.weight(1f), edgePadding = 8.dp) {
+            PrimaryScrollableTabRow(
+                selectedTabIndex = tab,
+                modifier = Modifier.weight(1f),
+                edgePadding = 8.dp,
+                containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            ) {
                 tabs.forEachIndexed { index, title ->
                     Tab(selected = tab == index, onClick = { tab = index }, text = { Text(stringResource(title)) })
                 }
+            }
+            IconButton(
+                onClick = {
+                    themeMode = DiaryThemeMode.entries[(themeMode.ordinal + 1) % DiaryThemeMode.entries.size]
+                    DiaryThemePrefs.save(context, themeMode)
+                },
+            ) {
+                Icon(
+                    imageVector = when (themeMode) {
+                        DiaryThemeMode.AUTO -> Icons.Outlined.BrightnessAuto
+                        DiaryThemeMode.LIGHT -> Icons.Outlined.LightMode
+                        DiaryThemeMode.DARK -> Icons.Outlined.DarkMode
+                    },
+                    contentDescription = stringResource(R.string.diary_theme),
+                )
             }
             IconButton(onClick = { showBackup = true }) {
                 Icon(Icons.Outlined.SaveAlt, contentDescription = stringResource(R.string.backup_title))
@@ -84,6 +111,7 @@ fun DiarioScreen() {
                 else -> NutritionTab(viewModel = nutrition)
             }
         }
+    }
     }
 }
 

@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -134,48 +136,30 @@ fun TrainerTab(viewModel: TrainerViewModel) {
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item { DiarySectionHeader(stringResource(R.string.diary_section_summary)) }
         item {
-            OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = data.trainerName.ifBlank { stringResource(R.string.trainer_title) },
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.weight(1f),
-                        )
-                        TextButton(onClick = { viewModel.open(TrainerEditor.Name) }) {
-                            Text(stringResource(R.string.trainer_set_name))
-                        }
+            val remaining = data.remaining
+            DiaryHeroCard(
+                title = data.trainerName.ifBlank { stringResource(R.string.trainer_title) },
+                subtitle = if (remaining != null && remaining <= 2) {
+                    stringResource(R.string.trainer_low, remaining)
+                } else {
+                    stringResource(R.string.trainer_title)
+                },
+                stats = listOf(
+                    (remaining?.toString() ?: "—") to stringResource(R.string.trainer_remaining),
+                    data.used.toString() to stringResource(R.string.trainer_done, data.bought),
+                    (if (data.spentChf > 0) data.spentChf.bodyNumber() else "—") to stringResource(R.string.trainer_spent),
+                ),
+                action = {
+                    IconButton(onClick = { viewModel.open(TrainerEditor.Name) }) {
+                        Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.trainer_set_name), tint = DiaryColors.onHeroMuted)
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TrainerStat(data.remaining?.toString() ?: "—", stringResource(R.string.trainer_remaining), Modifier.weight(1f))
-                        TrainerStat(data.used.toString(), stringResource(R.string.trainer_done, data.bought), Modifier.weight(1f))
-                        TrainerStat(
-                            if (data.spentChf > 0) data.spentChf.bodyNumber() else "—",
-                            stringResource(R.string.trainer_spent),
-                            Modifier.weight(1f),
-                        )
-                    }
-                    val remaining = data.remaining
-                    if (remaining != null && remaining <= 2) {
-                        Text(
-                            text = stringResource(R.string.trainer_low, remaining),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                }
-            }
+                    DiaryPill(stringResource(R.string.trainer_lesson), Icons.Outlined.Add) { viewModel.open(TrainerEditor.Lesson(null)) }
+                },
+            )
         }
         item {
             DiarySectionHeader(stringResource(R.string.trainer_section_entries)) {
-                TextButton(onClick = { viewModel.open(TrainerEditor.Lesson(null)) }) {
-                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text(stringResource(R.string.trainer_lesson))
-                }
                 TextButton(onClick = { viewModel.open(TrainerEditor.Package(null)) }) {
                     Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(4.dp))

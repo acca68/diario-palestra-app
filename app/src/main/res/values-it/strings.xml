@@ -4211,4 +4211,13 @@
     <string name="backup_restored">Diario ripristinato.</string>
     <string name="backup_not_backup">Questo file non è un backup del Diario.</string>
     <string name="backup_failed">Qualcosa non è andato: il file non è stato salvato o letto.</string>
+    <string name="gym_import_short">CSV</string>
+    <string name="body_empty_short">Ancora nessuna misurazione</string>
+    <string name="body_details">Dettagli</string>
+    <string name="nutri_no_next">Nessuna visita in agenda</string>
+    <string name="nutri_hero_plan">kcal piano</string>
+    <string name="nutri_hero_avg">kcal media 7 gg</string>
+    <string name="nutri_hero_protein">g proteine media</string>
+    <string name="nutri_visit">Visita</string>
+    <string name="diary_theme">Tema del Diario: automatico, chiaro, scuro</string>
 </resources>
