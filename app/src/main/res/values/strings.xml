@@ -4098,6 +4098,7 @@
     <string name="gym_bpm">%1$d bpm</string>
     <string name="gym_volume">%1$d kg volume</string>
     <string name="gym_session_no_sets">No sets yet: import Hevy’s CSV.</string>
+    <string name="gym_with_trainer">With %1$s</string>
     <string name="gym_progress_title">Progress by exercise</string>
     <string name="gym_progress_empty">Import Hevy’s CSV to follow your loads over time.</string>
     <string name="gym_progress_hint">Estimated one-rep max of the best set (Epley).</string>

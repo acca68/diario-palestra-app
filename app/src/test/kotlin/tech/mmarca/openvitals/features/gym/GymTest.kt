@@ -181,6 +181,24 @@ class TrainerDataTest {
     }
 
     @Test
+    fun conEddySwitchAddsThenRemovesTheLesson() {
+        val session = GymSession(
+            key = "k", title = "Gambe", date = LocalDate.of(2026, 11, 8),
+            start = LocalDateTime.of(2026, 11, 8, 18, 4, 33), durationMinutes = 55,
+            caloriesKcal = null, averageHeartRateBpm = null, watchSource = null, exercises = emptyList(),
+        )
+        val other = TrainerLesson("old", LocalDate.of(2026, 11, 1))
+        val on = TrainerData(lessons = listOf(other)).toggleLessonFor(session, "new")
+        val added = on.lessons.single { it.id == "new" }
+        assertEquals(LocalDate.of(2026, 11, 8), added.date)
+        assertEquals(java.time.LocalTime.of(18, 4), added.time)
+        assertEquals("Gambe", added.topic)
+        assertEquals(55, added.durationMinutes)
+        val off = on.toggleLessonFor(session, "unused")
+        assertEquals(listOf(other), off.lessons)
+    }
+
+    @Test
     fun readsDatesAsTyped() {
         assertEquals(LocalDate.of(2026, 11, 6), FormValues.date("6.11.2026"))
         assertEquals(LocalDate.of(2026, 11, 6), FormValues.date("06/11/2026"))

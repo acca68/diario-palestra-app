@@ -49,6 +49,26 @@ data class TrainerData(
     val remaining: Int? get() = if (packages.isEmpty()) null else bought - used
     val spentChf: Double get() = packages.sumOf { it.amountChf ?: 0.0 } + lessons.sumOf { it.costChf ?: 0.0 }
     val lessonDates: Set<LocalDate> get() = lessons.map { it.date }.toSet()
+
+    /**
+     * "Con Eddy" on a gym session: removes the lesson on that day (the one with the session's
+     * title first), or records a new one with the session's date, time, title and duration.
+     */
+    fun toggleLessonFor(session: GymSession, newId: String): TrainerData {
+        val sameDay = lessons.filter { it.date == session.date }
+        if (sameDay.isNotEmpty()) {
+            val target = sameDay.firstOrNull { it.topic == session.title } ?: sameDay.first()
+            return copy(lessons = lessons - target)
+        }
+        val lesson = TrainerLesson(
+            id = newId,
+            date = session.date,
+            time = session.start.toLocalTime().withSecond(0).withNano(0),
+            topic = session.title.takeIf { it.isNotBlank() },
+            durationMinutes = session.durationMinutes?.toInt(),
+        )
+        return copy(lessons = lessons + lesson)
+    }
 }
 
 private const val DEFAULT_TRAINER = "Eddy"

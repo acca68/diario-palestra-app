@@ -69,6 +69,12 @@ fun DiarioScreen() {
             },
         )
     }
+    LaunchedEffect(tab) {
+        when (tab) {
+            0 -> gym.reloadTrainer()
+            2 -> trainer.reload()
+        }
+    }
     val context = LocalContext.current
     var themeMode by remember { mutableStateOf(DiaryThemePrefs.load(context)) }
     DiaryTheme(themeMode) {

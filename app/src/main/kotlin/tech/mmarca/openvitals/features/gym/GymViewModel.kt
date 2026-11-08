@@ -39,6 +39,7 @@ data class GymUiState(
     val importedCount: Int = 0,
     val musclePeriodDays: Int = 7,
     val trainerDays: Set<LocalDate> = emptySet(),
+    val trainerName: String = "",
     val setsPerMuscle: Map<MuscleGroup, Double> = emptyMap(),
     val importMessage: GymImportMessage? = null,
     val error: ScreenError? = null,
@@ -65,6 +66,24 @@ class GymViewModel @Inject constructor(
 
     fun refresh() = load()
 
+    /** Reloads only the trainer's lessons (cheap: no Health Connect), e.g. back from the Trainer tab. */
+    fun reloadTrainer() {
+        viewModelScope.launch {
+            val trainer = runCatching { trainerStore.load() }.getOrNull() ?: return@launch
+            _uiState.update { it.copy(trainerDays = trainer.lessonDates, trainerName = trainer.trainerName) }
+        }
+    }
+
+    /** The "Con Eddy" switch on a session card. */
+    fun toggleTrainer(session: GymSession) {
+        viewModelScope.launch {
+            runCatching {
+                trainerStore.update { it.toggleLessonFor(session, java.util.UUID.randomUUID().toString()) }
+            }
+            reloadTrainer()
+        }
+    }
+
     private fun load() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -81,7 +100,7 @@ class GymViewModel @Inject constructor(
                     GymSessions.build(workouts, imported) to imported.size
                 }
             }.onSuccess { (sessions, importedCount) ->
-                val trainerDays = runCatching { trainerStore.load().lessonDates }.getOrDefault(emptySet())
+                val trainer = runCatching { trainerStore.load() }.getOrDefault(TrainerData())
                 _uiState.update { state ->
                     val exercises = GymSessions.progressExercises(sessions)
                     val selected = state.selectedExercise?.takeIf { it in exercises } ?: exercises.firstOrNull()
@@ -94,7 +113,8 @@ class GymViewModel @Inject constructor(
                         progress = selected?.let { GymSessions.progress(sessions, it) }.orEmpty(),
                         importedCount = importedCount,
                         setsPerMuscle = musclesFor(sessions, state.musclePeriodDays),
-                        trainerDays = trainerDays,
+                        trainerDays = trainer.lessonDates,
+                        trainerName = trainer.trainerName,
                     )
                 }
             }.onFailure { error ->

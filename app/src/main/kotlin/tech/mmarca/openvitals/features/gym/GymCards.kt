@@ -22,6 +22,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -174,7 +175,12 @@ private fun GymCalendarDay(
 }
 
 @Composable
-internal fun GymSessionCard(session: GymSession) {
+internal fun GymSessionCard(
+    session: GymSession,
+    withTrainer: Boolean = false,
+    trainerName: String = "",
+    onToggleTrainer: (() -> Unit)? = null,
+) {
     val locale = Locale.getDefault()
     OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -224,6 +230,18 @@ internal fun GymSessionCard(session: GymSession) {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.End,
                     )
+                }
+            }
+            if (onToggleTrainer != null) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(R.string.gym_with_trainer, trainerName.ifBlank { stringResource(R.string.trainer_title) }),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = if (withTrainer) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Switch(checked = withTrainer, onCheckedChange = { onToggleTrainer() })
                 }
             }
         }

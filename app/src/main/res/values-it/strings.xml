@@ -4061,6 +4061,7 @@
     <string name="gym_bpm">%1$d bpm</string>
     <string name="gym_volume">volume %1$d kg</string>
     <string name="gym_session_no_sets">Serie non ancora disponibili: importa il CSV di Hevy.</string>
+    <string name="gym_with_trainer">Con %1$s</string>
     <string name="gym_progress_title">Progressi per esercizio</string>
     <string name="gym_progress_empty">Importa il CSV di Hevy per seguire i carichi nel tempo.</string>
     <string name="gym_progress_hint">Massimale stimato della serie migliore (formula di Epley).</string>

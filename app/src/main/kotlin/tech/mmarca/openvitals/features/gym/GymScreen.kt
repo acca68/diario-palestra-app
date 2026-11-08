@@ -121,7 +121,12 @@ fun GymScreen(viewModel: GymViewModel) {
             }
             if (state.selectedSessions.isNotEmpty()) {
                 items(state.selectedSessions, key = { "sel-" + it.key }) { session ->
-                    GymSessionCard(session)
+                    GymSessionCard(
+                        session = session,
+                        withTrainer = session.date in state.trainerDays,
+                        trainerName = state.trainerName,
+                        onToggleTrainer = { viewModel.toggleTrainer(session) },
+                    )
                 }
             }
             item {
@@ -157,7 +162,12 @@ fun GymScreen(viewModel: GymViewModel) {
                 item { GymEmptyCard() }
             } else {
                 items(state.sessions.take(RECENT_SESSIONS), key = { it.key }) { session ->
-                    GymSessionCard(session)
+                    GymSessionCard(
+                        session = session,
+                        withTrainer = session.date in state.trainerDays,
+                        trainerName = state.trainerName,
+                        onToggleTrainer = { viewModel.toggleTrainer(session) },
+                    )
                 }
             }
         }
