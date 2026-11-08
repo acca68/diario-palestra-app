@@ -26,6 +26,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -92,46 +93,57 @@ fun BodyTab(viewModel: BodyViewModel) {
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        val latest = state.latest
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = viewModel::newReport, modifier = Modifier.weight(1f)) {
+            DiarySectionHeader(
+                if (latest != null) {
+                    stringResource(R.string.body_latest, latest.date.format(dateFormat))
+                } else {
+                    stringResource(R.string.diario_tab_body)
+                },
+            ) {
+                TextButton(onClick = viewModel::newReport) {
                     Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.body_new))
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.diary_add))
                 }
-                OutlinedButton(onClick = { picker.launch(arrayOf("*/*")) }, modifier = Modifier.weight(1f)) {
+            }
+        }
+        if (latest == null) {
+            if (!state.isLoading) item { DiaryNote(stringResource(R.string.body_empty)) }
+            item {
+                TextButton(onClick = { picker.launch(arrayOf("*/*")) }) {
                     Icon(Icons.Outlined.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text(stringResource(R.string.body_import))
                 }
             }
-        }
-        val latest = state.latest
-        if (latest == null) {
-            if (!state.isLoading) {
-                item {
-                    OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = stringResource(R.string.body_empty),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(16.dp),
-                        )
-                    }
-                }
-            }
             return@LazyColumn
         }
-        item { BodySummaryCard(state.reports, latest.date) }
-        item { BodyMapCard(state.reports, state.mapGroup, viewModel::showMap) }
+        item { BodySummaryCard(state.reports) }
+        item {
+            DiarySectionHeader(stringResource(R.string.body_map_title)) {
+                DiaryChoice(
+                    options = listOf(
+                        BodyFieldGroup.CIRCUMFERENCE to stringResource(R.string.body_map_circumferences),
+                        BodyFieldGroup.SEGMENTAL to stringResource(R.string.body_map_segmental),
+                    ),
+                    selected = state.mapGroup,
+                    onSelect = viewModel::showMap,
+                )
+            }
+        }
+        item { BodyMapCard(state.reports, state.mapGroup) }
+        item { DiarySectionHeader(stringResource(R.string.body_trend_title)) }
         item { BodyTrendCard(state.reports, state.trendField, viewModel::showTrend) }
         item {
-            Text(
-                text = stringResource(R.string.body_history),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = 4.dp),
-            )
+            DiarySectionHeader(stringResource(R.string.body_history)) {
+                TextButton(onClick = { picker.launch(arrayOf("*/*")) }) {
+                    Icon(Icons.Outlined.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.body_import))
+                }
+            }
         }
         items(state.reports, key = { it.date.toString() }) { report ->
             OpenVitalsCard(modifier = Modifier.fillMaxWidth().clickable { viewModel.edit(report) }) {
@@ -179,18 +191,13 @@ private fun DeltaText(field: BodyField, change: BodyChange?) {
 }
 
 @Composable
-private fun BodySummaryCard(reports: List<BodyReport>, latestDate: LocalDate) {
+private fun BodySummaryCard(reports: List<BodyReport>) {
     val fields = listOf(
         BodyField.WEIGHT, BodyField.FAT_PERCENT, BodyField.MUSCLE_MASS,
         BodyField.VISCERAL, BodyField.BMR, BodyField.SCORE,
     )
     OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(
-                text = stringResource(R.string.body_latest, latestDate.format(dateFormat)),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
             fields.chunked(3).forEach { row ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     row.forEach { field ->
@@ -217,7 +224,7 @@ private fun BodySummaryCard(reports: List<BodyReport>, latestDate: LocalDate) {
 }
 
 @Composable
-private fun BodyMapCard(reports: List<BodyReport>, group: BodyFieldGroup, onGroup: (BodyFieldGroup) -> Unit) {
+private fun BodyMapCard(reports: List<BodyReport>, group: BodyFieldGroup) {
     val segmental = group == BodyFieldGroup.SEGMENTAL
     @Composable
     fun Cell(field: BodyField, label: Int, align: Alignment.Horizontal) {
@@ -246,25 +253,6 @@ private fun BodyMapCard(reports: List<BodyReport>, group: BodyFieldGroup, onGrou
     )
     OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(R.string.body_map_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f),
-                )
-                FilterChip(
-                    selected = !segmental,
-                    onClick = { onGroup(BodyFieldGroup.CIRCUMFERENCE) },
-                    label = { Text(stringResource(R.string.body_map_circumferences)) },
-                )
-                Spacer(Modifier.width(6.dp))
-                FilterChip(
-                    selected = segmental,
-                    onClick = { onGroup(BodyFieldGroup.SEGMENTAL) },
-                    label = { Text(stringResource(R.string.body_map_segmental)) },
-                )
-            }
             if (!segmental) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                     Cell(BodyField.NECK, R.string.body_field_neck, Alignment.CenterHorizontally)
@@ -332,11 +320,6 @@ private fun BodyTrendCard(reports: List<BodyReport>, field: BodyField, onField: 
     val series = BodyReports.series(reports, field)
     OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(
-                text = stringResource(R.string.body_trend_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
             Row(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),

@@ -23,6 +23,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -73,12 +74,14 @@ fun GymScreen(viewModel: GymViewModel) {
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item { GymStatsRow(state.stats) }
+            item { DiarySectionHeader(stringResource(R.string.diary_section_summary)) }
             item {
-                GymImportCard(
-                    importedCount = state.importedCount,
-                    isImporting = state.isImporting,
-                    onImport = { picker.launch(arrayOf("*/*")) },
+                DiaryStatsCard(
+                    listOf(
+                        state.stats.weekStreak.toString() to stringResource(R.string.gym_stat_week_streak),
+                        (state.stats.restDays?.toString() ?: "–") to stringResource(R.string.gym_stat_rest_days),
+                        state.stats.sessionsThisMonth.toString() to stringResource(R.string.gym_stat_month),
+                    ),
                 )
             }
             state.error?.let { error ->
@@ -92,6 +95,7 @@ fun GymScreen(viewModel: GymViewModel) {
                     }
                 }
             }
+            item { DiarySectionHeader(stringResource(R.string.diary_section_calendar)) }
             item {
                 GymCalendarCard(
                     month = state.month,
@@ -109,13 +113,25 @@ fun GymScreen(viewModel: GymViewModel) {
                 }
             }
             item {
+                DiarySectionHeader(stringResource(R.string.gym_muscles_title)) {
+                    DiaryChoice(
+                        options = listOf(
+                            7 to stringResource(R.string.gym_muscles_days, 7),
+                            30 to stringResource(R.string.gym_muscles_days, 30),
+                        ),
+                        selected = state.musclePeriodDays,
+                        onSelect = viewModel::selectMusclePeriod,
+                    )
+                }
+            }
+            item {
                 GymMuscleCard(
                     periodDays = state.musclePeriodDays,
                     setsPerMuscle = state.setsPerMuscle,
                     trainedDays = state.trainedDays,
-                    onPeriod = viewModel::selectMusclePeriod,
                 )
             }
+            item { DiarySectionHeader(stringResource(R.string.gym_progress_title)) }
             item {
                 GymProgressCard(
                     exercises = state.progressExercises,
@@ -124,17 +140,33 @@ fun GymScreen(viewModel: GymViewModel) {
                     onSelect = viewModel::selectExercise,
                 )
             }
+            item {
+                DiarySectionHeader(stringResource(R.string.gym_recent_sessions)) {
+                    if (state.isImporting) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    } else {
+                        TextButton(onClick = { picker.launch(arrayOf("*/*")) }) {
+                            Icon(Icons.Outlined.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text(stringResource(R.string.gym_import_button))
+                        }
+                    }
+                }
+            }
+            item {
+                Text(
+                    text = if (state.importedCount > 0) {
+                        stringResource(R.string.gym_import_count, state.importedCount)
+                    } else {
+                        stringResource(R.string.gym_import_hint)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             if (state.sessions.isEmpty()) {
                 item { GymEmptyCard() }
             } else {
-                item {
-                    Text(
-                        text = stringResource(R.string.gym_recent_sessions),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(top = 8.dp),
-                    )
-                }
                 items(state.sessions.take(RECENT_SESSIONS), key = { it.key }) { session ->
                     GymSessionCard(session)
                 }
@@ -144,66 +176,6 @@ fun GymScreen(viewModel: GymViewModel) {
 }
 
 private const val RECENT_SESSIONS = 20
-
-@Composable
-private fun GymStatsRow(stats: GymStats) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        GymStat(stats.weekStreak.toString(), stringResource(R.string.gym_stat_week_streak), Modifier.weight(1f))
-        GymStat(stats.restDays?.toString() ?: "–", stringResource(R.string.gym_stat_rest_days), Modifier.weight(1f))
-        GymStat(stats.sessionsThisMonth.toString(), stringResource(R.string.gym_stat_month), Modifier.weight(1f))
-    }
-}
-
-@Composable
-private fun GymStat(value: String, label: String, modifier: Modifier) {
-    OpenVitalsCard(modifier = modifier) {
-        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
-            Text(text = value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
-private fun GymImportCard(importedCount: Int, isImporting: Boolean, onImport: () -> Unit) {
-    OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.gym_import_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    text = if (importedCount > 0) {
-                        stringResource(R.string.gym_import_count, importedCount)
-                    } else {
-                        stringResource(R.string.gym_import_hint)
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            if (isImporting) {
-                CircularProgressIndicator(modifier = Modifier.size(28.dp))
-            } else {
-                OutlinedButton(onClick = onImport) {
-                    Icon(Icons.Outlined.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.gym_import_button))
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun GymEmptyCard() {

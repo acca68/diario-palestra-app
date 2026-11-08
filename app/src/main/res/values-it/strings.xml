@@ -4195,4 +4195,20 @@
     <string name="nutri_week_empty">Nessun pasto in Connessione Salute negli ultimi 7 giorni. Registrali in MyFitnessPal.</string>
     <string name="nutri_week_average">Media dei %1$d giorni con pasti registrati.</string>
     <string name="nutri_week_hint">Verde nel piano (%1$d kcal), arancione sopra, blu molto sotto.</string>
+    <string name="diary_section_summary">Riepilogo</string>
+    <string name="diary_section_calendar">Calendario</string>
+    <string name="diary_add">Aggiungi</string>
+    <string name="trainer_section_entries">Lezioni e pacchetti</string>
+    <string name="trainer_package">Pacchetto</string>
+    <string name="backup_title">Backup e computer</string>
+    <string name="backup_body">Salva un file con tutto il Diario: serie di Hevy, misurazioni, trainer e nutrizionista. Serve per ripristinare l’app o per caricare tutto nel Diario web dal computer.</string>
+    <string name="backup_export">Salva file di backup</string>
+    <string name="backup_restore">Ripristina da un file</string>
+    <string name="backup_restore_confirm">Scegli il file da ripristinare</string>
+    <string name="backup_restore_warning">Il ripristino sostituisce i dati del Diario su questo telefono con quelli del file. I dati di Connessione Salute non vengono toccati.</string>
+    <string name="backup_close">Chiudi</string>
+    <string name="backup_exported">Backup salvato.</string>
+    <string name="backup_restored">Diario ripristinato.</string>
+    <string name="backup_not_backup">Questo file non è un backup del Diario.</string>
+    <string name="backup_failed">Qualcosa non è andato: il file non è stato salvato o letto.</string>
 </resources>

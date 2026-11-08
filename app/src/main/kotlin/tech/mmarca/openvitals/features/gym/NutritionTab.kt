@@ -24,6 +24,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -162,7 +163,7 @@ class NutritionViewModel @Inject constructor(
         reload()
     }
 
-    private fun reload() {
+    fun reload() {
         viewModelScope.launch {
             val visits = store.load()
             val today = LocalDate.now()
@@ -237,23 +238,17 @@ fun NutritionTab(viewModel: NutritionViewModel) {
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        item {
-            Button(onClick = { viewModel.open(null) }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.nutri_new_visit))
-            }
-        }
+        item { DiarySectionHeader(stringResource(R.string.nutri_plan)) }
         item { PlanCard(state.plan, state.nextVisit) }
+        item { DiarySectionHeader(stringResource(R.string.nutri_week)) }
         item { WeekCard(state.plan, state.days, state.loggedDays) }
-        if (state.visits.isNotEmpty()) {
-            item {
-                Text(
-                    text = stringResource(R.string.nutri_visits),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(top = 4.dp),
-                )
+        item {
+            DiarySectionHeader(stringResource(R.string.nutri_visits)) {
+                TextButton(onClick = { viewModel.open(null) }) {
+                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.diary_add))
+                }
             }
         }
         items(state.visits, key = { it.id }) { visit ->
@@ -277,7 +272,6 @@ fun NutritionTab(viewModel: NutritionViewModel) {
 private fun PlanCard(plan: NutritionVisit?, nextVisit: LocalDate?) {
     OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(R.string.nutri_plan), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             if (plan == null) {
                 Text(
                     stringResource(R.string.nutri_plan_empty),
@@ -326,7 +320,6 @@ private fun WeekCard(plan: NutritionVisit?, days: List<DailyMacros>, logged: Lis
     val locale = Locale.getDefault()
     OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(R.string.nutri_week), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             if (logged.isEmpty()) {
                 Text(
                     stringResource(R.string.nutri_week_empty),

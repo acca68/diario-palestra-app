@@ -4232,4 +4232,20 @@
     <string name="nutri_week_empty">No meals in Health Connect in the last 7 days. Log them in MyFitnessPal.</string>
     <string name="nutri_week_average">Average of the %1$d days with meals logged.</string>
     <string name="nutri_week_hint">Green within the plan (%1$d kcal), orange above, blue well below.</string>
+    <string name="diary_section_summary">Summary</string>
+    <string name="diary_section_calendar">Calendar</string>
+    <string name="diary_add">Add</string>
+    <string name="trainer_section_entries">Lessons and packages</string>
+    <string name="trainer_package">Package</string>
+    <string name="backup_title">Backup and computer</string>
+    <string name="backup_body">Save one file with everything in the Diario: Hevy sets, body measurements, trainer and nutritionist. Use it to restore the app, or load it into the web Diario on the computer.</string>
+    <string name="backup_export">Save backup file</string>
+    <string name="backup_restore">Restore from a file</string>
+    <string name="backup_restore_confirm">Choose the file to restore</string>
+    <string name="backup_restore_warning">Restoring replaces the Diario data on this phone with the file’s. Health Connect data is not touched.</string>
+    <string name="backup_close">Close</string>
+    <string name="backup_exported">Backup saved.</string>
+    <string name="backup_restored">Diario restored.</string>
+    <string name="backup_not_backup">This file is not a Diario backup.</string>
+    <string name="backup_failed">Something went wrong: the file was not saved or read.</string>
 </resources>

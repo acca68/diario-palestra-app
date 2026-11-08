@@ -47,7 +47,7 @@ class BodyViewModel @Inject constructor(
         reload()
     }
 
-    private fun reload() {
+    fun reload() {
         viewModelScope.launch {
             val reports = store.load().sortedByDescending { it.date }
             _uiState.update { it.copy(isLoading = false, reports = reports) }

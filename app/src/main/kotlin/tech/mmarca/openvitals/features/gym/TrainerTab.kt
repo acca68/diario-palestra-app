@@ -66,7 +66,7 @@ class TrainerViewModel @Inject constructor(private val store: TrainerStore) : Vi
         reload()
     }
 
-    private fun reload() {
+    fun reload() {
         viewModelScope.launch { _uiState.update { it.copy(data = store.load(), editor = null) } }
     }
 
@@ -134,6 +134,7 @@ fun TrainerTab(viewModel: TrainerViewModel) {
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        item { DiarySectionHeader(stringResource(R.string.diary_section_summary)) }
         item {
             OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -169,28 +170,21 @@ fun TrainerTab(viewModel: TrainerViewModel) {
             }
         }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { viewModel.open(TrainerEditor.Lesson(null)) }, modifier = Modifier.weight(1f)) {
+            DiarySectionHeader(stringResource(R.string.trainer_section_entries)) {
+                TextButton(onClick = { viewModel.open(TrainerEditor.Lesson(null)) }) {
                     Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.trainer_new_lesson))
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.trainer_lesson))
                 }
-                OutlinedButton(onClick = { viewModel.open(TrainerEditor.Package(null)) }, modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.trainer_new_package))
+                TextButton(onClick = { viewModel.open(TrainerEditor.Package(null)) }) {
+                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.trainer_package))
                 }
             }
         }
         if (data.packages.isEmpty() && data.lessons.isEmpty()) {
-            item {
-                OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = stringResource(R.string.trainer_empty),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(16.dp),
-                    )
-                }
-            }
+            item { DiaryNote(stringResource(R.string.trainer_empty)) }
         }
         val entries = data.lessons.map { it.date to (it as Any) } + data.packages.map { it.date to (it as Any) }
         items(entries.sortedByDescending { it.first }, key = { (_, e) -> if (e is TrainerLesson) "l" + e.id else "p" + (e as TrainerPackage).id }) { (_, entry) ->

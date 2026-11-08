@@ -259,11 +259,6 @@ internal fun GymProgressCard(
 ) {
     OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(
-                text = stringResource(R.string.gym_progress_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
             if (exercises.isEmpty()) {
                 Text(
                     text = stringResource(R.string.gym_progress_empty),

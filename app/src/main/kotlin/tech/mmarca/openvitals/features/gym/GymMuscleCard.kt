@@ -60,7 +60,6 @@ internal fun GymMuscleCard(
     periodDays: Int,
     setsPerMuscle: Map<MuscleGroup, Double>,
     trainedDays: Set<LocalDate>,
-    onPeriod: (Int) -> Unit,
 ) {
     val max = setsPerMuscle.values.maxOrNull() ?: 0.0
     val trained = MaterialTheme.colorScheme.primary
@@ -76,25 +75,6 @@ internal fun GymMuscleCard(
     }
     OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = stringResource(R.string.gym_muscles_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f),
-                )
-                FilterChip(
-                    selected = periodDays == 7,
-                    onClick = { onPeriod(7) },
-                    label = { Text(stringResource(R.string.gym_muscles_days, 7)) },
-                )
-                Box(Modifier.width(6.dp))
-                FilterChip(
-                    selected = periodDays == 30,
-                    onClick = { onPeriod(30) },
-                    label = { Text(stringResource(R.string.gym_muscles_days, 30)) },
-                )
-            }
             if (periodDays == 7) WeekStrip(trainedDays)
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 listOf(
@@ -121,8 +101,9 @@ internal fun GymMuscleCard(
             } else {
                 Text(
                     text = stringResource(R.string.gym_muscles_sets_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp),
                 )
                 ranked.forEach { (group, sets) ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -161,11 +142,6 @@ internal fun GymMuscleCard(
                     )
                 }
             }
-            Text(
-                text = stringResource(R.string.gym_muscles_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
