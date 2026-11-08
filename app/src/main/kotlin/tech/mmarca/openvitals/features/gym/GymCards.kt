@@ -134,6 +134,7 @@ private fun GymCalendarDay(
 ) {
     val colors = MaterialTheme.colorScheme
     val trained = sessions.isNotEmpty()
+    val gym = sessions.any { !it.isClass }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -144,7 +145,8 @@ private fun GymCalendarDay(
     ) {
         var circle = Modifier.size(34.dp).clip(CircleShape)
         circle = when {
-            trained -> circle.background(colors.primary)
+            gym -> circle.background(colors.primary)
+            trained -> circle.background(colors.primaryContainer)
             isToday -> circle.border(1.5.dp, colors.primary, CircleShape)
             else -> circle
         }
@@ -156,7 +158,8 @@ private fun GymCalendarDay(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (trained || isToday) FontWeight.SemiBold else FontWeight.Normal,
                 color = when {
-                    trained -> colors.onPrimary
+                    gym -> colors.onPrimary
+                    trained -> colors.onPrimaryContainer
                     isToday -> colors.primary
                     isFuture -> colors.onSurface.copy(alpha = 0.35f)
                     else -> colors.onSurface
@@ -164,7 +167,7 @@ private fun GymCalendarDay(
             )
         }
         Text(
-            text = sessions.firstOrNull()?.title.orEmpty(),
+            text = (sessions.firstOrNull { !it.isClass } ?: sessions.firstOrNull())?.displayTitle().orEmpty(),
             fontSize = 9.sp,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -172,6 +175,13 @@ private fun GymCalendarDay(
             modifier = Modifier.padding(horizontal = 2.dp),
         )
     }
+}
+
+/** The session's name: its own title, else the watch activity (Yoga, HIIT…) for a course. */
+@Composable
+internal fun GymSession.displayTitle(): String = title.ifBlank {
+    activityType?.let { tech.mmarca.openvitals.features.activity.exerciseTypeLabel(it) }
+        ?: stringResource(R.string.gym_session_untitled)
 }
 
 @Composable
@@ -186,7 +196,7 @@ internal fun GymSessionCard(
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.Top) {
                 Text(
-                    text = session.title.ifBlank { stringResource(R.string.gym_session_untitled) },
+                    text = session.displayTitle(),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f),
@@ -195,6 +205,13 @@ internal fun GymSessionCard(
                     text = session.start.format(DateTimeFormatter.ofPattern("EEE d MMM · HH:mm", locale)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            session.activityType?.let { type ->
+                Text(
+                    text = tech.mmarca.openvitals.features.activity.exerciseTypeLabel(type).uppercase(),
+                    style = DiaryType.smallLabel,
+                    color = MaterialTheme.colorScheme.tertiary,
                 )
             }
             val chips = buildList {
@@ -210,7 +227,7 @@ internal fun GymSessionCard(
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            if (session.exercises.isEmpty()) {
+            if (session.exercises.isEmpty() && !session.isClass) {
                 Text(
                     text = stringResource(R.string.gym_session_no_sets),
                     style = MaterialTheme.typography.bodySmall,
@@ -232,7 +249,7 @@ internal fun GymSessionCard(
                     )
                 }
             }
-            if (onToggleTrainer != null) {
+            if (onToggleTrainer != null && !session.isClass) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = stringResource(R.string.gym_with_trainer, trainerName.ifBlank { stringResource(R.string.trainer_title) }),

@@ -60,7 +60,12 @@ data class GymSession(
     val averageHeartRateBpm: Long?,
     val watchSource: String?,
     val exercises: List<ImportedExercise>,
+    /** Set for a course or cardio session recorded only on the watch: its Health Connect type. */
+    val activityType: Int? = null,
 ) {
+    /** A course or cardio session (HIIT, yoga, treadmill…) without a Hevy workout. */
+    val isClass: Boolean get() = activityType != null
+
     val hasSets: Boolean get() = exercises.any { it.sets.isNotEmpty() }
 
     /** Kilograms lifted: load × reps over every set, assisted machines left out. */

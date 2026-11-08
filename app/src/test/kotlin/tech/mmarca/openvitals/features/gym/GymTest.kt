@@ -69,6 +69,28 @@ class GymTest {
     }
 
     @Test
+    fun strengthGoesWithHevyAndCoursesStandAlone() {
+        val imported = HevyCsvParser.parse(csv).workouts
+        fun at(h: Int, m: Int): Instant = LocalDateTime.of(2026, 11, 2, h, m).atZone(zone).toInstant()
+        val strength = exercise("s", "com.garmin.android.apps.connectmobile", at(17, 36), at(18, 56), kcal = 500.0, hr = 110)
+            .copy(exerciseType = androidx.health.connect.client.records.ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING)
+        // A yoga class overlapping the time Hevy was filled in must not be taken for the weights.
+        val yoga = exercise("y", "com.garmin.android.apps.connectmobile", at(19, 20), at(20, 20), kcal = 200.0, hr = 90)
+            .copy(exerciseType = androidx.health.connect.client.records.ExerciseSessionRecord.EXERCISE_TYPE_YOGA, title = "Yoga serale")
+        val walk = exercise("w", "com.garmin.android.apps.connectmobile", at(12, 0), at(12, 40), kcal = 120.0)
+            .copy(exerciseType = androidx.health.connect.client.records.ExerciseSessionRecord.EXERCISE_TYPE_WALKING)
+        val sessions = GymSessions.build(listOf(strength, yoga, walk), imported, zone)
+            .filter { it.date == LocalDate.of(2026, 11, 2) }
+
+        val upper = sessions.single { !it.isClass }
+        assertEquals(500.0, upper.caloriesKcal!!, 0.01)
+        val course = sessions.single { it.isClass }
+        assertEquals("Yoga serale", course.title)
+        assertEquals(60L, course.durationMinutes)
+        assertEquals(2, sessions.size)
+    }
+
+    @Test
     fun progressAndStats() {
         val sessions = GymSessions.build(emptyList(), HevyCsvParser.parse(csv).workouts, zone)
         assertEquals(listOf("Leg Extension (Macchina)", "Panca Piana (Multipower)"), GymSessions.progressExercises(sessions))

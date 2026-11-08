@@ -27,6 +27,7 @@ object GymSessions {
     private const val MATCH_TOLERANCE_MINUTES = 3L
     private const val MIN_OVERLAP_SHARE = 0.4
     private const val MIN_GYM_MINUTES = 15L
+    private const val MIN_CLASS_MINUTES = 10L
 
     fun build(
         healthConnect: List<ExerciseData>,
@@ -71,7 +72,27 @@ object GymSessions {
                     zone = zone,
                 )
             }
-        return (fromHealthConnect + importOnly).sortedByDescending { it.start }
+        val classes = watch
+            .filter { it.id !in usedWatch }
+            .filter { it.exerciseType in classTypes }
+            .filter { Duration.between(it.startTime, it.endTime).toMinutes() >= MIN_CLASS_MINUTES }
+            .map { activity ->
+                val start = LocalDateTime.ofInstant(activity.startTime, zone)
+                val end = LocalDateTime.ofInstant(activity.endTime, zone)
+                GymSession(
+                    key = "class-" + start.withSecond(0).withNano(0),
+                    title = activity.title?.trim().orEmpty(),
+                    date = start.toLocalDate(),
+                    start = start,
+                    durationMinutes = Duration.between(start, end).toMinutes().takeIf { it > 0 },
+                    caloriesKcal = activity.totalCaloriesKcal?.takeIf { it > 0 },
+                    averageHeartRateBpm = activity.averageHeartRateBpm,
+                    watchSource = activity.source,
+                    exercises = emptyList(),
+                    activityType = activity.exerciseType,
+                )
+            }
+        return (fromHealthConnect + importOnly + classes).sortedByDescending { it.start }
     }
 
     private fun session(
@@ -85,8 +106,11 @@ object GymSessions {
         zone: ZoneId,
     ): GymSession {
         val available = watch.filter { it.id !in usedWatch }
-        val overlapping = end?.let { bestOverlap(start, it, available, zone) }
-        val watchMatch = overlapping ?: sameDayGymSession(start, available, zone)
+        val gymCandidates = available.filter { it.exerciseType in strengthTypes || it.exerciseType in legacyGymTypes }
+        val overlapping = end?.let { bestOverlap(start, it, gymCandidates, zone) }
+        val watchMatch = overlapping
+            ?: sameDay(start, available, zone, strengthTypes)
+            ?: sameDay(start, available, zone, legacyGymTypes)
         watchMatch?.let { usedWatch += it.id }
         val realStart = watchMatch?.let { LocalDateTime.ofInstant(it.startTime, zone) } ?: start
         val realEnd = watchMatch?.let { LocalDateTime.ofInstant(it.endTime, zone) } ?: end
@@ -125,20 +149,52 @@ object GymSessions {
             ?.first
     }
 
-    private val notGym = setOf(
-        ExerciseSessionRecord.EXERCISE_TYPE_WALKING,
-        ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
-        ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL,
-        ExerciseSessionRecord.EXERCISE_TYPE_BIKING,
-        ExerciseSessionRecord.EXERCISE_TYPE_HIKING,
-        ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_OPEN_WATER,
-        ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL,
+    /** Weights on the watch ("Allenamento di forza"): always the Hevy workout of that day. */
+    private val strengthTypes = setOf(
+        ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING,
+        ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING,
     )
 
-    /** The watch's gym session of the same day, the closest in time when there are more. */
-    private fun sameDayGymSession(start: LocalDateTime, candidates: List<ExerciseData>, zone: ZoneId): ExerciseData? =
+    /**
+     * Before strength mode, weights were recorded as HIIT: a same-day HIIT still goes with the
+     * Hevy workout when the watch has no strength session that day (courses are other types).
+     */
+    private val legacyGymTypes = setOf(
+        ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING,
+        ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,
+    )
+
+    /** Courses and indoor cardio shown in the diary even without a Hevy workout. */
+    private val classTypes = setOf(
+        ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING,
+        ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING,
+        ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING,
+        ExerciseSessionRecord.EXERCISE_TYPE_YOGA,
+        ExerciseSessionRecord.EXERCISE_TYPE_PILATES,
+        ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
+        ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL,
+        ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL,
+        ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE,
+        ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING_MACHINE,
+        ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS,
+        ExerciseSessionRecord.EXERCISE_TYPE_BOOT_CAMP,
+        ExerciseSessionRecord.EXERCISE_TYPE_EXERCISE_CLASS,
+        ExerciseSessionRecord.EXERCISE_TYPE_DANCING,
+        ExerciseSessionRecord.EXERCISE_TYPE_STRETCHING,
+        ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS,
+        ExerciseSessionRecord.EXERCISE_TYPE_BOXING,
+        ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,
+    )
+
+    /** The watch session of the given types on the same day, the closest in time when there are more. */
+    private fun sameDay(
+        start: LocalDateTime,
+        candidates: List<ExerciseData>,
+        zone: ZoneId,
+        types: Set<Int>,
+    ): ExerciseData? =
         candidates
-            .filter { it.exerciseType !in notGym }
+            .filter { it.exerciseType in types }
             .filter { LocalDateTime.ofInstant(it.startTime, zone).toLocalDate() == start.toLocalDate() }
             .filter { Duration.between(it.startTime, it.endTime).toMinutes() >= MIN_GYM_MINUTES }
             .minByOrNull { abs(Duration.between(LocalDateTime.ofInstant(it.startTime, zone), start).toMinutes()) }
