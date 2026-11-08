@@ -87,7 +87,13 @@ fun DiarioScreen() {
                 containerColor = androidx.compose.ui.graphics.Color.Transparent,
             ) {
                 tabs.forEachIndexed { index, title ->
-                    Tab(selected = tab == index, onClick = { tab = index }, text = { Text(stringResource(title)) })
+                    Tab(
+                        selected = tab == index,
+                        onClick = { tab = index },
+                        text = { Text(stringResource(title)) },
+                        selectedContentColor = MaterialTheme.colorScheme.primary,
+                        unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
             IconButton(

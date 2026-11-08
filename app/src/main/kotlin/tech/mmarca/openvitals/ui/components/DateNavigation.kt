@@ -22,7 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import tech.mmarca.openvitals.R
 import java.time.Instant
@@ -53,15 +56,22 @@ fun DayNavigator(
                 )
                 .clickable(onClick = onOpenCalendar),
         ) {
+            // Diario Palestra: the reference's look, a spaced blue label over a heavy title.
             Text(
-                text = localizedDayTitle(date),
-                style = MaterialTheme.typography.titleLarge,
+                text = localizedDaySubtitle(date).uppercase(),
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontFamily = FontFamily.Monospace,
+                    letterSpacing = 2.sp,
+                ),
+                color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Start,
             )
             Text(
-                text = localizedDaySubtitle(date),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = localizedDayTitle(date),
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.6).sp,
+                ),
                 textAlign = TextAlign.Start,
             )
         }

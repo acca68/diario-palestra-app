@@ -80,6 +80,7 @@ internal object DiaryType {
         letterSpacing = 1.2.sp,
     )
     val figure = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 26.sp, letterSpacing = (-0.5).sp)
+    val figureSmall = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 21.sp, letterSpacing = (-0.5).sp)
     val title = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 24.sp, letterSpacing = (-0.6).sp)
 }
 
@@ -156,7 +157,13 @@ internal fun DiaryHeroCard(
             Row {
                 stats.forEach { (value, label) ->
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(value, style = DiaryType.figure, color = DiaryColors.onHero)
+                        Text(
+                            text = value,
+                            style = if (stats.size >= 3) DiaryType.figureSmall else DiaryType.figure,
+                            color = DiaryColors.onHero,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
                         Text(label.uppercase(), style = DiaryType.smallLabel, color = DiaryColors.onHeroMuted)
                     }
                 }
