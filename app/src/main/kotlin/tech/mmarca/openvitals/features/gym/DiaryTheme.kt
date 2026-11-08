@@ -34,74 +34,80 @@ internal object DiaryThemePrefs {
     }
 }
 
-/** The palette: mint ground, white cards, deep teal for the lead card, orange for the main action. */
+/**
+ * The palette, after the "Athlete AI" reference: warm cream ground, white cards, a vivid
+ * royal blue for accents and the lead card, near-black bold type, orange for charts.
+ */
 internal object DiaryColors {
-    val heroStart = Color(0xFF123F3B)
-    val heroEnd = Color(0xFF1D6B62)
+    val blue = Color(0xFF3B5BDB)
+    val heroStart = Color(0xFF3557D6)
+    val heroEnd = Color(0xFF4A6CF0)
     val onHero = Color.White
-    val onHeroMuted = Color(0xFFB7D9D2)
-    val orange = Color(0xFFF2762E)
+    val onHeroMuted = Color(0xFFD3DCFF)
+    val orange = Color(0xFFEE6C2B)
     val onOrange = Color.White
+    val pill = Color.White
+    val onPill = blue
     val good = Color(0xFF2FA36B)
     val warn = Color(0xFFE08A2C)
 
     val light = lightColorScheme(
-        primary = Color(0xFF0F7A6E),
+        primary = blue,
         onPrimary = Color.White,
-        primaryContainer = Color(0xFFCDEFE7),
-        onPrimaryContainer = Color(0xFF07332E),
-        secondary = Color(0xFF3E6A63),
+        primaryContainer = Color(0xFFDCE3FF),
+        onPrimaryContainer = Color(0xFF0D1F66),
+        secondary = Color(0xFF5B5E6B),
         onSecondary = Color.White,
-        secondaryContainer = Color(0xFFDCEEEA),
-        onSecondaryContainer = Color(0xFF0E2C28),
+        secondaryContainer = Color(0xFFE9E5DB),
+        onSecondaryContainer = Color(0xFF1C1B18),
         tertiary = orange,
         onTertiary = Color.White,
-        background = Color(0xFFEAF4F1),
-        onBackground = Color(0xFF10201E),
-        surface = Color(0xFFF6FBFA),
-        onSurface = Color(0xFF10201E),
-        surfaceVariant = Color(0xFFE2EFEB),
-        onSurfaceVariant = Color(0xFF5A6E6A),
+        background = Color(0xFFF3EFE7),
+        onBackground = Color(0xFF131313),
+        surface = Color(0xFFF3EFE7),
+        onSurface = Color(0xFF131313),
+        surfaceVariant = Color(0xFFEAE5DA),
+        onSurfaceVariant = Color(0xFF6E6A62),
         surfaceContainerLowest = Color.White,
-        surfaceContainerLow = Color.White,
-        surfaceContainer = Color.White,
-        surfaceContainerHigh = Color(0xFFF1F7F5),
-        surfaceContainerHighest = Color(0xFFE3EEEB),
-        outline = Color(0xFFB7CAC5),
-        outlineVariant = Color(0xFFD6E4E0),
+        surfaceContainerLow = Color(0xFFFFFDF9),
+        surfaceContainer = Color(0xFFFFFDF9),
+        surfaceContainerHigh = Color(0xFFF8F5EE),
+        surfaceContainerHighest = Color(0xFFEFEAE0),
+        outline = Color(0xFFCFC8BA),
+        outlineVariant = Color(0xFFE4DED2),
     )
 
     val dark = darkColorScheme(
-        primary = Color(0xFF4FD1BC),
-        onPrimary = Color(0xFF02302A),
-        primaryContainer = Color(0xFF14524A),
-        onPrimaryContainer = Color(0xFFC9F3EA),
-        secondary = Color(0xFF9CC8BF),
-        onSecondary = Color(0xFF0B2A26),
-        secondaryContainer = Color(0xFF213F3B),
-        onSecondaryContainer = Color(0xFFD5ECE7),
-        tertiary = Color(0xFFFF8C4A),
+        primary = Color(0xFF7D97FF),
+        onPrimary = Color(0xFF0A1A5C),
+        primaryContainer = Color(0xFF263C99),
+        onPrimaryContainer = Color(0xFFDCE3FF),
+        secondary = Color(0xFFB9B5AB),
+        onSecondary = Color(0xFF26241F),
+        secondaryContainer = Color(0xFF34312B),
+        onSecondaryContainer = Color(0xFFEDE8DE),
+        tertiary = Color(0xFFFF8A4C),
         onTertiary = Color(0xFF3A1600),
-        background = Color(0xFF0B1A19),
-        onBackground = Color(0xFFE2F0EC),
-        surface = Color(0xFF0E201F),
-        onSurface = Color(0xFFE2F0EC),
-        surfaceVariant = Color(0xFF1E3532),
-        onSurfaceVariant = Color(0xFF9AB3AE),
-        surfaceContainerLowest = Color(0xFF0E201F),
-        surfaceContainerLow = Color(0xFF132927),
-        surfaceContainer = Color(0xFF16302D),
-        surfaceContainerHigh = Color(0xFF1C3835),
-        surfaceContainerHighest = Color(0xFF26443F),
-        outline = Color(0xFF4B6A65),
-        outlineVariant = Color(0xFF2B4743),
+        background = Color(0xFF141311),
+        onBackground = Color(0xFFF1EDE5),
+        surface = Color(0xFF141311),
+        onSurface = Color(0xFFF1EDE5),
+        surfaceVariant = Color(0xFF2A2824),
+        onSurfaceVariant = Color(0xFFA9A398),
+        surfaceContainerLowest = Color(0xFF181715),
+        surfaceContainerLow = Color(0xFF1D1C19),
+        surfaceContainer = Color(0xFF201F1C),
+        surfaceContainerHigh = Color(0xFF292723),
+        surfaceContainerHighest = Color(0xFF34322D),
+        outline = Color(0xFF5A564E),
+        outlineVariant = Color(0xFF34322D),
     )
 
     val shapes = Shapes(
         extraSmall = RoundedCornerShape(8.dp),
         small = RoundedCornerShape(12.dp),
-        medium = RoundedCornerShape(22.dp),
-        large = RoundedCornerShape(28.dp),
+        medium = RoundedCornerShape(16.dp),
+        large = RoundedCornerShape(22.dp),
         extraLarge = RoundedCornerShape(32.dp),
     )
 }
@@ -115,9 +121,9 @@ internal fun DiaryTheme(mode: DiaryThemeMode, content: @Composable () -> Unit) {
     }
     val scheme = if (dark) DiaryColors.dark else DiaryColors.light
     val ground = if (dark) {
-        listOf(Color(0xFF0B1A19), Color(0xFF0F2422))
+        listOf(Color(0xFF141311), Color(0xFF141311))
     } else {
-        listOf(Color(0xFFDDF0EA), Color(0xFFF3F8F6))
+        listOf(Color(0xFFF3EFE7), Color(0xFFF3EFE7))
     }
     MaterialTheme(colorScheme = scheme, shapes = DiaryColors.shapes, typography = MaterialTheme.typography) {
         Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(ground))) {

@@ -331,7 +331,7 @@ internal fun GymProgressCard(
 
 @Composable
 internal fun GymProgressChart(points: List<GymProgressPoint>, unit: String = "kg") {
-    val line = MaterialTheme.colorScheme.primary
+    val line = MaterialTheme.colorScheme.tertiary
     val grid = MaterialTheme.colorScheme.outlineVariant
     val minValue = points.minOf { it.oneRepMaxKg }
     val maxValue = points.maxOf { it.oneRepMaxKg }

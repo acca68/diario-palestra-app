@@ -1,6 +1,9 @@
 package tech.mmarca.openvitals.features.gym
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -41,19 +44,43 @@ internal fun DiarySectionHeader(
     action: (@Composable RowScope.() -> Unit)? = null,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().heightIn(min = 40.dp).padding(top = 12.dp),
+        modifier = modifier.fillMaxWidth().heightIn(min = 44.dp).padding(top = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
-        )
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                text = title.uppercase(),
+                style = DiaryType.label,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Box(
+                modifier = Modifier
+                    .size(width = 44.dp, height = 3.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+            )
+        }
         action?.invoke(this)
     }
+}
+
+/** The reference's type: monospaced, spaced capitals for labels; heavy, tight figures. */
+internal object DiaryType {
+    val label = TextStyle(
+        fontFamily = FontFamily.Monospace,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+        letterSpacing = 2.5.sp,
+    )
+    val smallLabel = TextStyle(
+        fontFamily = FontFamily.Monospace,
+        fontWeight = FontWeight.Medium,
+        fontSize = 10.sp,
+        letterSpacing = 1.2.sp,
+    )
+    val figure = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 26.sp, letterSpacing = (-0.5).sp)
+    val title = TextStyle(fontWeight = FontWeight.ExtraBold, fontSize = 24.sp, letterSpacing = (-0.6).sp)
 }
 
 /** A few headline figures side by side in one card. */
@@ -63,10 +90,10 @@ internal fun DiaryStatsCard(stats: List<Pair<String, String>>) {
         Row(modifier = Modifier.padding(vertical = 16.dp, horizontal = 8.dp)) {
             stats.forEach { (value, label) ->
                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
+                    Text(value, style = DiaryType.figure)
                     Text(
-                        text = label,
-                        style = MaterialTheme.typography.bodySmall,
+                        text = label.uppercase(),
+                        style = DiaryType.smallLabel,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )
@@ -98,7 +125,7 @@ internal fun DiaryNote(text: String, modifier: Modifier = Modifier) {
 }
 
 /**
- * The lead card of a tab, deep teal with white text, as in the reference: a title, a
+ * The lead card of a tab, royal blue with white text, as in the reference: a title, a
  * line under it, up to four headline figures and the tab's main action as an orange pill.
  */
 @Composable
@@ -118,7 +145,7 @@ internal fun DiaryHeroCard(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, color = DiaryColors.onHero)
+                Text(title, style = DiaryType.title, color = DiaryColors.onHero)
                 subtitle?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, color = DiaryColors.onHeroMuted)
                 }
@@ -129,8 +156,8 @@ internal fun DiaryHeroCard(
             Row {
                 stats.forEach { (value, label) ->
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold, color = DiaryColors.onHero)
-                        Text(label, style = MaterialTheme.typography.bodySmall, color = DiaryColors.onHeroMuted)
+                        Text(value, style = DiaryType.figure, color = DiaryColors.onHero)
+                        Text(label.uppercase(), style = DiaryType.smallLabel, color = DiaryColors.onHeroMuted)
                     }
                 }
             }
@@ -138,13 +165,13 @@ internal fun DiaryHeroCard(
     }
 }
 
-/** The orange pill of the reference, for a tab's main action. */
+/** The white pill on the blue lead card, for a tab's main action. */
 @Composable
 internal fun DiaryPill(text: String, icon: ImageVector? = null, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         shape = CircleShape,
-        colors = ButtonDefaults.buttonColors(containerColor = DiaryColors.orange, contentColor = DiaryColors.onOrange),
+        colors = ButtonDefaults.buttonColors(containerColor = DiaryColors.pill, contentColor = DiaryColors.onPill),
         contentPadding = ButtonDefaults.ContentPadding,
     ) {
         if (icon != null) {
