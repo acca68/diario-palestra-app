@@ -20,7 +20,8 @@ val Teal40 = OpenVitalsGreen
  * one clears WCAG 3:1 against both surfaces, worst case 3.09. Never
  * brighten one without re-measuring. Data only, never interactive chrome.
  */
-val StepsColor = Color(0xFF3F9A63)
+// Diario Palestra: steps in orange and workouts in blue, as in the reference.
+val StepsColor = Color(0xFFEE7A35)
 val DistanceColor = Color(0xFF3B7DD8)
 val SleepColor = Color(0xFF6C5CD6)
 val HeartColor = Color(0xFFD2497B)
@@ -29,7 +30,7 @@ val WeightColor = Color(0xFFBE7A2C)
 val CaloriesColor = Color(0xFFDD5F3E)
 val HydrationColor = Color(0xFF2E97C9)
 val NutritionColor = Color(0xFF5C9E4B)
-val WorkoutColor = Color(0xFF2AA0A0)
+val WorkoutColor = Color(0xFF5B7BF0)
 val BodyFatColor = Color(0xFF8A6A55)
 val FloorsColor = Color(0xFFA8881F)
 val ActiveCaloriesColor = Color(0xFFDE6C39)
@@ -39,7 +40,7 @@ val MindfulnessColor = Color(0xFF8A6E9C)
 val CycleColor = Color(0xFFBE5C85)
 
 // Cycle phases reuse audited accents, so they clear 3:1 on both surfaces. Menstrual is CycleColor.
-val FollicularPhaseColor = StepsColor
+val FollicularPhaseColor = Color(0xFF3F9A63)
 val OvulatoryPhaseColor = FloorsColor
 val LutealPhaseColor = SleepColor
 

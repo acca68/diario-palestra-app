@@ -180,9 +180,9 @@ private fun DashboardActivitiesSectionHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = stringResource(R.string.dashboard_activities_today),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            text = stringResource(R.string.dashboard_activities_today).uppercase(),
+            style = tech.mmarca.openvitals.ui.components.DiarySectionLabel,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.weight(1f),
         )
         Icon(

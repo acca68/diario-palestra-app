@@ -95,6 +95,10 @@ class MainActivity : AppCompatActivity() {
                         detectDarkMode = { appDarkTheme },
                     ),
                 )
+                // Diario Palestra: no grey band behind the 3-button navigation bar.
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    window.isNavigationBarContrastEnforced = false
+                }
             }
 
             OpenVitalsTheme(
