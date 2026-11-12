@@ -74,7 +74,7 @@ object GymSessions {
             }
         val classes = watch
             .filter { it.id !in usedWatch }
-            .filter { it.exerciseType in classTypes }
+            .filter { it.exerciseType !in outdoorTypes }
             .filter { Duration.between(it.startTime, it.endTime).toMinutes() >= MIN_CLASS_MINUTES }
             .map { activity ->
                 val start = LocalDateTime.ofInstant(activity.startTime, zone)
@@ -164,26 +164,27 @@ object GymSessions {
         ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,
     )
 
-    /** Courses and indoor cardio shown in the diary even without a Hevy workout. */
-    private val classTypes = setOf(
-        ExerciseSessionRecord.EXERCISE_TYPE_HIGH_INTENSITY_INTERVAL_TRAINING,
-        ExerciseSessionRecord.EXERCISE_TYPE_STRENGTH_TRAINING,
-        ExerciseSessionRecord.EXERCISE_TYPE_WEIGHTLIFTING,
-        ExerciseSessionRecord.EXERCISE_TYPE_YOGA,
-        ExerciseSessionRecord.EXERCISE_TYPE_PILATES,
-        ExerciseSessionRecord.EXERCISE_TYPE_BIKING_STATIONARY,
-        ExerciseSessionRecord.EXERCISE_TYPE_RUNNING_TREADMILL,
-        ExerciseSessionRecord.EXERCISE_TYPE_ELLIPTICAL,
-        ExerciseSessionRecord.EXERCISE_TYPE_ROWING_MACHINE,
-        ExerciseSessionRecord.EXERCISE_TYPE_STAIR_CLIMBING_MACHINE,
-        ExerciseSessionRecord.EXERCISE_TYPE_CALISTHENICS,
-        ExerciseSessionRecord.EXERCISE_TYPE_BOOT_CAMP,
-        ExerciseSessionRecord.EXERCISE_TYPE_EXERCISE_CLASS,
-        ExerciseSessionRecord.EXERCISE_TYPE_DANCING,
-        ExerciseSessionRecord.EXERCISE_TYPE_STRETCHING,
-        ExerciseSessionRecord.EXERCISE_TYPE_MARTIAL_ARTS,
-        ExerciseSessionRecord.EXERCISE_TYPE_BOXING,
-        ExerciseSessionRecord.EXERCISE_TYPE_OTHER_WORKOUT,
+    /**
+     * Everything else the watch records (HIIT, yoga, treadmill, any course, whatever Garmin calls
+     * it) is shown in the diary even without a Hevy workout; only outdoor sport and walks stay out.
+     */
+    private val outdoorTypes = setOf(
+        ExerciseSessionRecord.EXERCISE_TYPE_WALKING,
+        ExerciseSessionRecord.EXERCISE_TYPE_RUNNING,
+        ExerciseSessionRecord.EXERCISE_TYPE_BIKING,
+        ExerciseSessionRecord.EXERCISE_TYPE_HIKING,
+        ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_OPEN_WATER,
+        ExerciseSessionRecord.EXERCISE_TYPE_SWIMMING_POOL,
+        ExerciseSessionRecord.EXERCISE_TYPE_GOLF,
+        ExerciseSessionRecord.EXERCISE_TYPE_SKIING,
+        ExerciseSessionRecord.EXERCISE_TYPE_SNOWBOARDING,
+        ExerciseSessionRecord.EXERCISE_TYPE_SNOWSHOEING,
+        ExerciseSessionRecord.EXERCISE_TYPE_ROCK_CLIMBING,
+        ExerciseSessionRecord.EXERCISE_TYPE_SAILING,
+        ExerciseSessionRecord.EXERCISE_TYPE_PADDLING,
+        ExerciseSessionRecord.EXERCISE_TYPE_ROWING,
+        ExerciseSessionRecord.EXERCISE_TYPE_SURFING,
+        ExerciseSessionRecord.EXERCISE_TYPE_WHEELCHAIR,
     )
 
     /** The watch session of the given types on the same day, the closest in time when there are more. */
