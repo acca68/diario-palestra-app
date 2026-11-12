@@ -88,6 +88,14 @@ class GymTest {
         assertEquals("Yoga serale", course.title)
         assertEquals(60L, course.durationMinutes)
         assertEquals(2, sessions.size)
+
+        // Any other indoor watch activity (an unlisted type) on a day without Hevy is a course.
+        val other = exercise("x", "com.garmin.android.apps.connectmobile",
+            LocalDateTime.of(2026, 11, 7, 10, 45).atZone(zone).toInstant(),
+            LocalDateTime.of(2026, 11, 7, 12, 0).atZone(zone).toInstant(), kcal = 600.0)
+            .copy(exerciseType = androidx.health.connect.client.records.ExerciseSessionRecord.EXERCISE_TYPE_GYMNASTICS)
+        val saturday = GymSessions.build(listOf(other, walk), imported, zone).filter { it.date == LocalDate.of(2026, 11, 7) }
+        assertEquals(75L, saturday.single().durationMinutes)
     }
 
     @Test
