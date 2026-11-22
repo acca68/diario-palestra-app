@@ -79,6 +79,8 @@ data class NutritionVisit(
     val nextVisit: LocalDate? = null,
     val costChf: Double? = null,
     val note: String? = null,
+    /** Who held the visit. */
+    val professional: String? = null,
 )
 
 @Singleton
@@ -109,6 +111,7 @@ class NutritionStore @Inject constructor(@param:ApplicationContext context: Cont
                                     put("next", v.nextVisit?.toString())
                                     put("cost", v.costChf)
                                     put("note", v.note)
+                                    put("by", v.professional)
                                 },
                             )
                         }
@@ -133,6 +136,7 @@ class NutritionStore @Inject constructor(@param:ApplicationContext context: Cont
                 nextVisit = o.date("next"),
                 costChf = o.num("cost"),
                 note = o.str("note"),
+                professional = o.str("by"),
             )
         }
     }
@@ -149,6 +153,9 @@ data class NutritionUiState(
     val plan: NutritionVisit? get() = visits.filter { it.kcal != null || it.proteinG != null }.maxByOrNull { it.date }
     val nextVisit: LocalDate? get() = visits.mapNotNull { it.nextVisit }.filter { !it.isBefore(LocalDate.now()) }.minOrNull()
     val loggedDays: List<DailyMacros> get() = days.filter { it.energyKcal > 0 }
+
+    /** The nutritionists seen so far, the latest first: the choices of the visit form. */
+    val professionals: List<String> get() = visits.mapNotNull { it.professional }.distinct()
 }
 
 @HiltViewModel
@@ -192,6 +199,7 @@ class NutritionViewModel @Inject constructor(
             nextVisit = FormValues.date(v["next"]),
             costChf = FormValues.number(v["cost"]),
             note = FormValues.text(v["note"]),
+            professional = FormValues.text(v["by"]),
         )
         viewModelScope.launch {
             store.update { list -> list.filter { it.id != visit.id } + visit }
@@ -219,6 +227,7 @@ fun NutritionTab(viewModel: NutritionViewModel) {
             title = if (e == null) R.string.nutri_new_visit else R.string.nutri_edit_visit,
             fields = listOf(
                 FormField("date", R.string.body_date, FormKind.DATE, (e?.date ?: LocalDate.now()).format(FormValues.dateOutput)),
+                FormField("by", R.string.nutri_professional, FormKind.TEXT, e?.professional ?: state.professionals.firstOrNull().orEmpty()),
                 FormField("kcal", R.string.nutri_kcal, FormKind.NUMBER, FormValues.format(e?.kcal)),
                 FormField("protein", R.string.nutri_protein, FormKind.NUMBER, FormValues.format(e?.proteinG)),
                 FormField("carbs", R.string.nutri_carbs, FormKind.NUMBER, FormValues.format(e?.carbsG)),
@@ -264,7 +273,11 @@ fun NutritionTab(viewModel: NutritionViewModel) {
         items(state.visits, key = { it.id }) { visit ->
             OpenVitalsCard(modifier = Modifier.fillMaxWidth().clickable { viewModel.open(visit) }) {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(visit.date.format(visitDate), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        listOfNotNull(visit.date.format(visitDate), visit.professional).joinToString(" · "),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
                     val details = listOfNotNull(
                         visit.kcal?.let { "${it.roundToInt()} kcal" },
                         visit.targetWeightKg?.let { stringResource(R.string.nutri_target_short, it.bodyNumber()) },

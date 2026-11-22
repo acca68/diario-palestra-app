@@ -40,6 +40,8 @@ data class GymUiState(
     val musclePeriodDays: Int = 7,
     val trainerDays: Set<LocalDate> = emptySet(),
     val trainerName: String = "",
+    val trainers: List<String> = emptyList(),
+    val trainerByDay: Map<LocalDate, String> = emptyMap(),
     val setsPerMuscle: Map<MuscleGroup, Double> = emptyMap(),
     val importMessage: GymImportMessage? = null,
     val error: ScreenError? = null,
@@ -70,15 +72,22 @@ class GymViewModel @Inject constructor(
     fun reloadTrainer() {
         viewModelScope.launch {
             val trainer = runCatching { trainerStore.load() }.getOrNull() ?: return@launch
-            _uiState.update { it.copy(trainerDays = trainer.lessonDates, trainerName = trainer.trainerName) }
+            _uiState.update {
+                it.copy(
+                    trainerDays = trainer.lessonDates,
+                    trainerName = trainer.trainerName,
+                    trainers = trainer.trainers,
+                    trainerByDay = trainer.trainerByDay,
+                )
+            }
         }
     }
 
-    /** The "Con Eddy" switch on a session card. */
-    fun toggleTrainer(session: GymSession) {
+    /** The "Con Eddy" switch on a session card; [trainer] is who gave the lesson (the usual one when null). */
+    fun toggleTrainer(session: GymSession, trainer: String? = null) {
         viewModelScope.launch {
             runCatching {
-                trainerStore.update { it.toggleLessonFor(session, java.util.UUID.randomUUID().toString()) }
+                trainerStore.update { it.toggleLessonFor(session, java.util.UUID.randomUUID().toString(), trainer) }
             }
             reloadTrainer()
         }
@@ -115,6 +124,8 @@ class GymViewModel @Inject constructor(
                         setsPerMuscle = musclesFor(sessions, state.musclePeriodDays),
                         trainerDays = trainer.lessonDates,
                         trainerName = trainer.trainerName,
+                        trainers = trainer.trainers,
+                        trainerByDay = trainer.trainerByDay,
                     )
                 }
             }.onFailure { error ->

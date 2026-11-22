@@ -43,7 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.time.LocalDate
 import tech.mmarca.openvitals.R
 
-/** Diario Palestra: the personal diary, one tab per part: gym, body, trainer, nutritionist. */
+/** Diario Palestra: the personal diary, one tab per part: gym, body, trainer, nutritionist, health. */
 @Composable
 fun DiarioScreen() {
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -52,11 +52,13 @@ fun DiarioScreen() {
     val body = hiltViewModel<BodyViewModel>()
     val trainer = hiltViewModel<TrainerViewModel>()
     val nutrition = hiltViewModel<NutritionViewModel>()
+    val health = hiltViewModel<HealthViewModel>()
     val tabs = listOf(
         R.string.diario_tab_gym,
         R.string.diario_tab_body,
         R.string.diario_tab_trainer,
         R.string.diario_tab_nutrition,
+        R.string.diario_tab_health,
     )
     if (showBackup) {
         DiaryBackupDialog(
@@ -66,6 +68,7 @@ fun DiarioScreen() {
                 body.reload()
                 trainer.reload()
                 nutrition.reload()
+                health.reload()
             },
         )
     }
@@ -120,7 +123,8 @@ fun DiarioScreen() {
                 0 -> GymScreen(viewModel = gym)
                 1 -> BodyTab(viewModel = body)
                 2 -> TrainerTab(viewModel = trainer)
-                else -> NutritionTab(viewModel = nutrition)
+                3 -> NutritionTab(viewModel = nutrition)
+                else -> HealthTab(viewModel = health)
             }
         }
     }

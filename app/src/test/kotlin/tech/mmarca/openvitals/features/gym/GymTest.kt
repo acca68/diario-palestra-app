@@ -236,3 +236,56 @@ class TrainerDataTest {
         assertEquals(12.5, FormValues.number("12,5")!!, 0.001)
     }
 }
+
+class TrainersAndHealthTest {
+
+    @Test
+    fun eachTrainerHasItsOwnAccount() {
+        val data = TrainerData(
+            trainers = listOf("Eddy", "Marco"),
+            packages = listOf(
+                TrainerPackage("p1", LocalDate.of(2026, 10, 1), lessons = 10, amountChf = 600.0),
+                TrainerPackage("p2", LocalDate.of(2026, 11, 1), lessons = 5, amountChf = 300.0, trainer = "Marco"),
+            ),
+            lessons = listOf(
+                TrainerLesson("l1", LocalDate.of(2026, 10, 2)),
+                TrainerLesson("l2", LocalDate.of(2026, 11, 3), trainer = "Marco"),
+                TrainerLesson("l3", LocalDate.of(2026, 11, 4), trainer = "Marco"),
+            ),
+        )
+        assertEquals(9, data.account("Eddy").remaining)
+        assertEquals(3, data.account("Marco").remaining)
+        assertEquals(900.0, data.account(null).spentChf, 0.01)
+        assertEquals("Marco", data.trainerByDay[LocalDate.of(2026, 11, 3)])
+
+        val renamed = data.rename("Marco", "Marco R.")
+        assertEquals(listOf("Eddy", "Marco R."), renamed.trainers)
+        assertEquals(3, renamed.account("Marco R.").remaining)
+        assertEquals(false, renamed.isUnused("Marco R."))
+    }
+
+    @Test
+    fun regularChecksFollowTheLastVisit() {
+        val today = LocalDate.of(2026, 11, 22)
+        val data = HealthData(
+            visits = listOf(
+                HealthVisit("v1", LocalDate.of(2026, 4, 10), HealthType.HYGIENIST),
+                HealthVisit("v2", LocalDate.of(2025, 12, 10), HealthType.SPECIALIST, provider = "Dermatologo Rossi", costChf = 150.0),
+                HealthVisit("v3", LocalDate.of(2026, 3, 1), HealthType.LAB, costChf = 80.0),
+                HealthVisit("v4", LocalDate.of(2026, 12, 5), HealthType.DENTIST),
+            ),
+        )
+        val hygiene = data.state(HealthCheck("c1", HealthType.HYGIENIST, everyMonths = 6), today)
+        assertEquals(LocalDate.of(2026, 10, 10), hygiene.next)
+        assertEquals(CheckStatus.OVERDUE, hygiene.status)
+
+        val derma = data.state(HealthCheck("c2", HealthType.SPECIALIST, 12, match = "dermatologo"), today)
+        assertEquals(CheckStatus.SOON, derma.status)
+        assertEquals(CheckStatus.NEVER, data.state(HealthCheck("c3", HealthType.SPECIALIST, 12, match = "cardiologo"), today).status)
+        // An appointment already booked means the check is in order.
+        assertEquals(CheckStatus.OK, data.state(HealthCheck("c4", HealthType.DENTIST, 12), today).status)
+
+        assertEquals(listOf(HealthType.LAB to 80.0), data.costs(2026, today))
+        assertEquals(1, data.upcoming(today).size)
+    }
+}

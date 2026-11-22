@@ -1,6 +1,8 @@
 package tech.mmarca.openvitals.features.gym
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,6 +18,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -50,14 +54,20 @@ import tech.mmarca.openvitals.ui.components.OpenVitalsCard
 sealed interface TrainerEditor {
     data class Lesson(val lesson: TrainerLesson?) : TrainerEditor
     data class Package(val pack: TrainerPackage?) : TrainerEditor
-    data object Name : TrainerEditor
+
+    /** Adds a trainer ([name] null) or renames one. */
+    data class Trainer(val name: String?) : TrainerEditor
 }
 
 @Immutable
 data class TrainerUiState(
     val data: TrainerData = TrainerData(),
     val editor: TrainerEditor? = null,
-)
+    /** The trainer whose figures and entries are shown; null means the usual one. */
+    val selected: String? = null,
+) {
+    val current: String get() = selected?.takeIf { it in data.trainers } ?: data.trainerName
+}
 
 @HiltViewModel
 class TrainerViewModel @Inject constructor(private val store: TrainerStore) : ViewModel() {
@@ -73,6 +83,8 @@ class TrainerViewModel @Inject constructor(private val store: TrainerStore) : Vi
     }
 
     fun open(editor: TrainerEditor?) = _uiState.update { it.copy(editor = editor) }
+
+    fun select(name: String) = _uiState.update { it.copy(selected = name) }
 
     private fun change(transform: (TrainerData) -> TrainerData) {
         viewModelScope.launch {
@@ -94,6 +106,7 @@ class TrainerViewModel @Inject constructor(private val store: TrainerStore) : Vi
             costChf = FormValues.number(v["cost"]),
             extra = v["extra"] == "true",
             note = FormValues.text(v["note"]),
+            trainer = FormValues.text(v["trainer"]) ?: _uiState.value.current,
         )
         change { data -> data.copy(lessons = data.lessons.filter { it.id != lesson.id } + lesson) }
         return null
@@ -108,14 +121,25 @@ class TrainerViewModel @Inject constructor(private val store: TrainerStore) : Vi
             lessons = lessons,
             amountChf = FormValues.number(v["amount"]),
             note = FormValues.text(v["note"]),
+            trainer = FormValues.text(v["trainer"]) ?: _uiState.value.current,
         )
         change { data -> data.copy(packages = data.packages.filter { it.id != pack.id } + pack) }
         return null
     }
 
-    fun saveName(v: Map<String, String>): Int? {
-        change { it.copy(trainerName = FormValues.text(v["name"]).orEmpty()) }
+    /** Adds a trainer ([old] null) or renames [old]; returns the error to show, or null. */
+    fun saveTrainer(old: String?, v: Map<String, String>): Int? {
+        val name = FormValues.text(v["name"]) ?: return R.string.trainer_error_name
+        val data = _uiState.value.data
+        if (name != old && name in data.trainers) return R.string.trainer_error_exists
+        change { d -> if (old == null) d.copy(trainers = d.trainers + name) else d.rename(old, name) }
+        _uiState.update { it.copy(selected = name) }
         return null
+    }
+
+    fun deleteTrainer(name: String) {
+        change { d -> if (d.trainers.size > 1 && d.isUnused(name)) d.copy(trainers = d.trainers - name) else d }
+        _uiState.update { it.copy(selected = null) }
     }
 
     fun deleteLesson(id: String) = change { data -> data.copy(lessons = data.lessons.filter { it.id != id }) }
@@ -129,7 +153,9 @@ private val listDate: DateTimeFormatter get() = DateTimeFormatter.ofPattern("EEE
 fun TrainerTab(viewModel: TrainerViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val data = state.data
-    TrainerEditorHost(state.editor, data, viewModel)
+    val current = state.current
+    val account = data.account(current)
+    TrainerEditorHost(state.editor, data, current, viewModel)
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth().widthIn(max = 920.dp),
@@ -137,9 +163,9 @@ fun TrainerTab(viewModel: TrainerViewModel) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            val remaining = data.remaining
+            val remaining = account.remaining
             DiaryHeroCard(
-                title = data.trainerName.ifBlank { stringResource(R.string.trainer_title) },
+                title = current.ifBlank { stringResource(R.string.trainer_title) },
                 subtitle = if (remaining != null && remaining <= 2) {
                     stringResource(R.string.trainer_low, remaining)
                 } else {
@@ -147,16 +173,31 @@ fun TrainerTab(viewModel: TrainerViewModel) {
                 },
                 stats = listOf(
                     (remaining?.toString() ?: "—") to stringResource(R.string.trainer_remaining),
-                    data.used.toString() to stringResource(R.string.trainer_done, data.bought),
-                    (if (data.spentChf > 0) data.spentChf.bodyNumber() else "—") to stringResource(R.string.trainer_spent),
+                    account.used.toString() to stringResource(R.string.trainer_done, account.bought),
+                    (if (account.spentChf > 0) account.spentChf.bodyNumber() else "—") to stringResource(R.string.trainer_spent),
                 ),
                 action = {
-                    IconButton(onClick = { viewModel.open(TrainerEditor.Name) }) {
+                    IconButton(onClick = { viewModel.open(TrainerEditor.Trainer(current)) }) {
                         Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.trainer_set_name), tint = DiaryColors.onHeroMuted)
                     }
                     DiaryPill(stringResource(R.string.trainer_lesson), Icons.Outlined.Add) { viewModel.open(TrainerEditor.Lesson(null)) }
                 },
             )
+        }
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                data.trainers.forEach { name ->
+                    FilterChip(selected = name == current, onClick = { viewModel.select(name) }, label = { Text(name) })
+                }
+                AssistChip(
+                    onClick = { viewModel.open(TrainerEditor.Trainer(null)) },
+                    label = { Text(stringResource(R.string.trainer_add)) },
+                    leadingIcon = { Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                )
+            }
         }
         item {
             DiarySectionHeader(stringResource(R.string.trainer_section_entries)) {
@@ -167,10 +208,12 @@ fun TrainerTab(viewModel: TrainerViewModel) {
                 }
             }
         }
-        if (data.packages.isEmpty() && data.lessons.isEmpty()) {
+        val lessons = data.lessons.filter { data.trainerOf(it) == current }
+        val packages = data.packages.filter { data.trainerOf(it) == current }
+        if (packages.isEmpty() && lessons.isEmpty()) {
             item { DiaryNote(stringResource(R.string.trainer_empty)) }
         }
-        val entries = data.lessons.map { it.date to (it as Any) } + data.packages.map { it.date to (it as Any) }
+        val entries = lessons.map { it.date to (it as Any) } + packages.map { it.date to (it as Any) }
         items(entries.sortedByDescending { it.first }, key = { (_, e) -> if (e is TrainerLesson) "l" + e.id else "p" + (e as TrainerPackage).id }) { (_, entry) ->
             when (entry) {
                 is TrainerLesson -> TrainerRow(
@@ -219,21 +262,32 @@ private fun TrainerRow(title: String, date: String, details: String, onClick: ()
 }
 
 @Composable
-private fun TrainerEditorHost(editor: TrainerEditor?, data: TrainerData, viewModel: TrainerViewModel) {
+private fun TrainerEditorHost(editor: TrainerEditor?, data: TrainerData, current: String, viewModel: TrainerViewModel) {
     val close = { viewModel.open(null) }
+    // With more trainers the forms ask whose lesson or package it is.
+    fun whose(initial: String?): List<FormField> =
+        if (data.trainers.size < 2) {
+            emptyList()
+        } else {
+            listOf(FormField("trainer", R.string.trainer_who, FormKind.CHOICE, initial ?: current, data.trainers.map { it to it }))
+        }
     when (editor) {
         null -> Unit
-        TrainerEditor.Name -> DiaryFormDialog(
-            title = R.string.trainer_set_name,
-            fields = listOf(FormField("name", R.string.trainer_name, FormKind.TEXT, data.trainerName)),
-            onDismiss = close,
-            validate = viewModel::saveName,
-        )
+        is TrainerEditor.Trainer -> {
+            val old = editor.name
+            DiaryFormDialog(
+                title = if (old == null) R.string.trainer_add else R.string.trainer_set_name,
+                fields = listOf(FormField("name", R.string.trainer_name, FormKind.TEXT, old.orEmpty())),
+                onDismiss = close,
+                validate = { viewModel.saveTrainer(old, it) },
+                onDelete = old?.takeIf { data.trainers.size > 1 && data.isUnused(it) }?.let { { viewModel.deleteTrainer(it) } },
+            )
+        }
         is TrainerEditor.Lesson -> {
             val l = editor.lesson
             DiaryFormDialog(
                 title = if (l == null) R.string.trainer_new_lesson else R.string.trainer_edit_lesson,
-                fields = listOf(
+                fields = whose(l?.let(data::trainerOf)) + listOf(
                     FormField("date", R.string.body_date, FormKind.DATE, (l?.date ?: java.time.LocalDate.now()).format(FormValues.dateOutput)),
                     FormField("time", R.string.body_time, FormKind.TIME, l?.time?.toString().orEmpty()),
                     FormField("topic", R.string.trainer_topic, FormKind.TEXT, l?.topic.orEmpty()),
@@ -251,7 +305,7 @@ private fun TrainerEditorHost(editor: TrainerEditor?, data: TrainerData, viewMod
             val p = editor.pack
             DiaryFormDialog(
                 title = if (p == null) R.string.trainer_new_package else R.string.trainer_edit_package,
-                fields = listOf(
+                fields = whose(p?.let(data::trainerOf)) + listOf(
                     FormField("date", R.string.body_date, FormKind.DATE, (p?.date ?: java.time.LocalDate.now()).format(FormValues.dateOutput)),
                     FormField("lessons", R.string.trainer_lessons_count, FormKind.NUMBER, p?.lessons?.toString().orEmpty()),
                     FormField("amount", R.string.trainer_amount, FormKind.NUMBER, FormValues.format(p?.amountChf)),

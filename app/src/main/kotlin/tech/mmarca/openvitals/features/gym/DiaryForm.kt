@@ -2,6 +2,7 @@ package tech.mmarca.openvitals.features.gym
 
 import android.content.Context
 import androidx.annotation.StringRes
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -79,9 +81,16 @@ internal fun JsonObject.date(key: String): LocalDate? = str(key)?.let { runCatch
 
 internal fun JsonObject.time(key: String): LocalTime? = str(key)?.let { runCatching { LocalTime.parse(it) }.getOrNull() }
 
-enum class FormKind { TEXT, NUMBER, DATE, TIME, CHECK }
+enum class FormKind { TEXT, NUMBER, DATE, TIME, CHECK, CHOICE }
 
-class FormField(val key: String, @param:StringRes val label: Int, val kind: FormKind, val initial: String = "")
+/** A field of a form; a [FormKind.CHOICE] shows [choices] (value to label) as chips. */
+class FormField(
+    val key: String,
+    @param:StringRes val label: Int,
+    val kind: FormKind,
+    val initial: String = "",
+    val choices: List<Pair<String, String>> = emptyList(),
+)
 
 /** Parsing of the form's text, shared by the editors. */
 object FormValues {
@@ -140,7 +149,26 @@ internal fun DiaryFormDialog(
                 ) {
                     error?.let { Text(stringResource(it), color = MaterialTheme.colorScheme.error) }
                     fields.forEach { field ->
-                        if (field.kind == FormKind.CHECK) {
+                        if (field.kind == FormKind.CHOICE) {
+                            Text(
+                                stringResource(field.label),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                field.choices.forEach { (value, label) ->
+                                    FilterChip(
+                                        selected = values[field.key] == value,
+                                        onClick = { values[field.key] = value },
+                                        label = { Text(label) },
+                                    )
+                                }
+                            }
+                        } else if (field.kind == FormKind.CHECK) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Checkbox(
                                     checked = values[field.key] == "true",

@@ -47,6 +47,7 @@ class DiaryBackup @Inject constructor(
         "body" to BodyReportStore.FILE_NAME,
         "trainer" to "diario_palestra_trainer.json",
         "nutrition" to "diario_palestra_nutrizionista.json",
+        "health" to HealthStore.FILE_NAME,
     )
 
     suspend fun export(uri: Uri) {
