@@ -4268,4 +4268,19 @@
     <string name="health_check_months">Ogni quanti mesi</string>
     <string name="health_check_match">Solo visite che contengono (facoltativo, es. dermatologo)</string>
     <string name="health_error_months">Scrivi ogni quanti mesi va ripetuto.</string>
+    <string name="diary_home_morning">Buongiorno!</string>
+    <string name="diary_home_afternoon">Buon pomeriggio!</string>
+    <string name="diary_home_evening">Buonasera!</string>
+    <string name="diary_home_sections">Il tuo diario</string>
+    <string name="diary_home_month">Questo mese</string>
+    <string name="diary_home_sessions">sedute</string>
+    <string name="diary_home_weight">kg</string>
+    <string name="diary_home_tools">Strumenti</string>
+    <string name="diary_home_back">Torna al diario</string>
+    <string name="diary_style_blue">Stile blu</string>
+    <string name="diary_style_pastel">Stile pastello</string>
+    <string name="diary_mode_auto">Automatico</string>
+    <string name="diary_mode_light">Chiaro</string>
+    <string name="diary_mode_dark">Scuro</string>
+    <string name="diary_tile_backup">Backup</string>
 </resources>

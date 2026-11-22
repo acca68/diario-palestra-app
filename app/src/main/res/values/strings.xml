@@ -4305,4 +4305,19 @@
     <string name="health_check_months">Every how many months</string>
     <string name="health_check_match">Only visits mentioning (optional, e.g. dermatologist)</string>
     <string name="health_error_months">Write every how many months it repeats.</string>
+    <string name="diary_home_morning">Good morning!</string>
+    <string name="diary_home_afternoon">Good afternoon!</string>
+    <string name="diary_home_evening">Good evening!</string>
+    <string name="diary_home_sections">Your diary</string>
+    <string name="diary_home_month">This month</string>
+    <string name="diary_home_sessions">sessions</string>
+    <string name="diary_home_weight">kg</string>
+    <string name="diary_home_tools">Tools</string>
+    <string name="diary_home_back">Back to the diary</string>
+    <string name="diary_style_blue">Blue style</string>
+    <string name="diary_style_pastel">Pastel style</string>
+    <string name="diary_mode_auto">Automatic</string>
+    <string name="diary_mode_light">Light</string>
+    <string name="diary_mode_dark">Dark</string>
+    <string name="diary_tile_backup">Backup</string>
 </resources>
