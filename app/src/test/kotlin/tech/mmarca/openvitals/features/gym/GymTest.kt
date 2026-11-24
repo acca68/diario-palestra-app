@@ -307,7 +307,7 @@ class GymInsightsTest {
             session(LocalDate.of(2026, 11, 23), listOf(bench)),
             session(LocalDate.of(2026, 11, 17)),
             session(LocalDate.of(2026, 11, 10)),
-            session(LocalDate.of(2026, 10, 1)),
+            session(LocalDate.of(2026, 10, 15)),
             session(LocalDate.of(2026, 9, 1)),
             session(LocalDate.of(2026, 9, 8)),
             session(LocalDate.of(2026, 9, 15)),
