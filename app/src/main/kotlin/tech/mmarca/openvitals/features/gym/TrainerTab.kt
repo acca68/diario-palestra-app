@@ -241,7 +241,7 @@ fun TrainerTab(viewModel: TrainerViewModel) {
 @Composable
 private fun TrainerStat(value: String, label: String, modifier: Modifier) {
     Column(modifier = modifier) {
-        Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
+        Text(value, style = MaterialTheme.typography.headlineMedium, fontWeight = figureWeight())
         Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

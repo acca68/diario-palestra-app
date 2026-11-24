@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,14 +31,26 @@ data class BodyUiState(
     val isEditorOpen: Boolean = false,
     val message: BodyMessage? = null,
     val importedCount: Int = 0,
+    /** The target weight of the latest nutritionist visit that set one, and that visit's date. */
+    val targetWeight: Double? = null,
+    val targetSince: LocalDate? = null,
 ) {
     val latest: BodyReport? get() = reports.maxByOrNull { it.date }
+
+    /** The weight when the target was set: the last report on or before that day, else the first one. */
+    val startWeight: Double?
+        get() {
+            val withWeight = reports.filter { it[BodyField.WEIGHT] != null }.sortedBy { it.date }
+            val since = targetSince ?: return withWeight.firstOrNull()?.get(BodyField.WEIGHT)
+            return (withWeight.lastOrNull { !it.date.isAfter(since) } ?: withWeight.firstOrNull())?.get(BodyField.WEIGHT)
+        }
 }
 
 @HiltViewModel
 class BodyViewModel @Inject constructor(
     private val store: BodyReportStore,
     private val bodyRepository: BodyRepository,
+    private val nutritionStore: NutritionStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BodyUiState())
@@ -50,7 +63,11 @@ class BodyViewModel @Inject constructor(
     fun reload() {
         viewModelScope.launch {
             val reports = store.load().sortedByDescending { it.date }
-            _uiState.update { it.copy(isLoading = false, reports = reports) }
+            val goal = runCatching { nutritionStore.load() }.getOrDefault(emptyList())
+                .filter { it.targetWeightKg != null }.maxByOrNull { it.date }
+            _uiState.update {
+                it.copy(isLoading = false, reports = reports, targetWeight = goal?.targetWeightKg, targetSince = goal?.date)
+            }
         }
     }
 

@@ -45,7 +45,13 @@ data class GymUiState(
     val setsPerMuscle: Map<MuscleGroup, Double> = emptyMap(),
     val importMessage: GymImportMessage? = null,
     val error: ScreenError? = null,
+    val period: GymPeriod = GymPeriod.MONTH,
+    val bestStreak: Int = 0,
+    val milestone: Milestone = Milestone(0, 0, 10),
+    val challenges: List<Challenge> = emptyList(),
+    val recovery: List<RecoveryHint> = emptyList(),
 ) {
+    val summary: GymSummary by lazy { GymInsights.summary(sessions, period) }
     val sessionsByDay: Map<LocalDate, List<GymSession>> by lazy { sessions.groupBy { it.date } }
     val trainedDays: Set<LocalDate> by lazy { sessions.map { it.date }.toSet() }
     val selectedSessions: List<GymSession>
@@ -57,6 +63,7 @@ class GymViewModel @Inject constructor(
     private val activityRepository: ActivityRepository,
     private val importStore: GymImportStore,
     private val trainerStore: TrainerStore,
+    private val bodyStore: BodyReportStore,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GymUiState())
@@ -67,6 +74,8 @@ class GymViewModel @Inject constructor(
     }
 
     fun refresh() = load()
+
+    fun selectPeriod(period: GymPeriod) = _uiState.update { it.copy(period = period) }
 
     /** Reloads only the trainer's lessons (cheap: no Health Connect), e.g. back from the Trainer tab. */
     fun reloadTrainer() {
@@ -110,6 +119,7 @@ class GymViewModel @Inject constructor(
                 }
             }.onSuccess { (sessions, importedCount) ->
                 val trainer = runCatching { trainerStore.load() }.getOrDefault(TrainerData())
+                val weighIns = runCatching { bodyStore.load().map { it.date } }.getOrDefault(emptyList())
                 _uiState.update { state ->
                     val exercises = GymSessions.progressExercises(sessions)
                     val selected = state.selectedExercise?.takeIf { it in exercises } ?: exercises.firstOrNull()
@@ -126,6 +136,10 @@ class GymViewModel @Inject constructor(
                         trainerName = trainer.trainerName,
                         trainers = trainer.trainers,
                         trainerByDay = trainer.trainerByDay,
+                        bestStreak = GymInsights.bestStreak(sessions),
+                        milestone = GymInsights.sessionMilestone(sessions),
+                        challenges = GymInsights.challenges(sessions, weighIns),
+                        recovery = GymInsights.recovery(sessions),
                     )
                 }
             }.onFailure { error ->

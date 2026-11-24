@@ -134,6 +134,7 @@ private fun GymCalendarDay(
 ) {
     val colors = MaterialTheme.colorScheme
     val trained = sessions.isNotEmpty()
+    val soft = LocalDiaryStyle.current.soft
     val gym = sessions.any { !it.isClass }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -145,7 +146,9 @@ private fun GymCalendarDay(
     ) {
         var circle = Modifier.size(34.dp).clip(CircleShape)
         circle = when {
+            gym && soft -> circle.background(colors.primaryContainer)
             gym -> circle.background(colors.primary)
+            trained && soft -> circle.background(colors.surfaceVariant)
             trained -> circle.background(colors.primaryContainer)
             isToday -> circle.border(1.5.dp, colors.primary, CircleShape)
             else -> circle
@@ -158,7 +161,9 @@ private fun GymCalendarDay(
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (trained || isToday) FontWeight.SemiBold else FontWeight.Normal,
                 color = when {
+                    gym && soft -> colors.onPrimaryContainer
                     gym -> colors.onPrimary
+                    trained && soft -> colors.onSurface
                     trained -> colors.onPrimaryContainer
                     isToday -> colors.primary
                     isFuture -> colors.onSurface.copy(alpha = 0.35f)

@@ -333,7 +333,7 @@ private fun PlanCard(plan: NutritionVisit?, nextVisit: LocalDate?) {
 @Composable
 private fun PlanValue(value: String?, label: String, modifier: Modifier) {
     Column(modifier = modifier) {
-        Text(value ?: "—", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
+        Text(value ?: "—", style = MaterialTheme.typography.headlineSmall, fontWeight = figureWeight())
         Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
@@ -412,7 +412,7 @@ private fun barColor(kcal: Double, target: Double?): Color = when {
 @Composable
 private fun AverageValue(value: Double, target: Double?, label: String, modifier: Modifier) {
     Column(modifier = modifier) {
-        Text(value.roundToInt().toString(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+        Text(value.roundToInt().toString(), style = MaterialTheme.typography.titleLarge, fontWeight = figureWeight())
         Text(
             if (target != null) "$label / ${target.roundToInt()}" else label,
             style = MaterialTheme.typography.bodySmall,

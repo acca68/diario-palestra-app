@@ -43,6 +43,14 @@ data class DiaryTint(val first: Color, val second: Color, val firstDark: Color, 
 /** Which style is drawn: the diary's pieces read it to pick their look. */
 internal val LocalDiaryStyle = androidx.compose.runtime.staticCompositionLocalOf { DiaryStyle.BLUE }
 
+/** The soft styles (pastel, glass): thin type, a home page of tiles, a circle as the lead. */
+internal val DiaryStyle.soft: Boolean get() = this != DiaryStyle.BLUE
+
+/** Weight of the figures in cards: bold in the blue style, light in the soft ones. */
+@Composable
+internal fun figureWeight(): androidx.compose.ui.text.font.FontWeight =
+    if (LocalDiaryStyle.current.soft) androidx.compose.ui.text.font.FontWeight.Light else androidx.compose.ui.text.font.FontWeight.SemiBold
+
 internal object DiaryThemePrefs {
     private const val FILE = "diario_palestra_prefs"
     private const val KEY = "theme"

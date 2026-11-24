@@ -10,9 +10,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.BrightnessAuto
 import androidx.compose.material.icons.outlined.DarkMode
@@ -140,10 +143,11 @@ fun DiarioScreen() {
                     )
                 } else {
                     Column(modifier = Modifier.fillMaxSize()) {
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
-                            IconButton(onClick = { section = -1 }) {
-                                Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.diary_home_back))
-                            }
+                        // One clear way back to the tiles (the bar above leaves the diary).
+                        TextButton(onClick = { section = -1 }, modifier = Modifier.padding(start = 8.dp)) {
+                            Icon(Icons.Outlined.GridView, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text(stringResource(R.string.diary_home_back))
                         }
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) { part(section) }
                     }

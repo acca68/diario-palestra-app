@@ -28,6 +28,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +54,7 @@ fun GymScreen(viewModel: GymViewModel) {
     val context = LocalContext.current
     // With more trainers, switching "Con trainer" on asks who gave the lesson.
     var choosingFor by remember { mutableStateOf<GymSession?>(null) }
+    var query by rememberSaveable { mutableStateOf("") }
     choosingFor?.let { session ->
         AlertDialog(
             onDismissRequest = { choosingFor = null },
@@ -134,6 +138,25 @@ fun GymScreen(viewModel: GymViewModel) {
                     }
                 }
             }
+            item { DiarySectionHeader(stringResource(R.string.gym_section_summary)) }
+            item { GymSummaryCard(state.period, viewModel::selectPeriod, state.summary) }
+            item { DiarySectionHeader(stringResource(R.string.gym_section_streak)) }
+            item { GymStreakCard(state.stats.weekStreak, maxOf(state.bestStreak, state.stats.weekStreak), state.milestone) }
+            if (state.challenges.isNotEmpty()) {
+                item {
+                    DiarySectionHeader(
+                        stringResource(
+                            R.string.gym_section_challenges,
+                            java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("LLLL", java.util.Locale.getDefault())),
+                        ),
+                    )
+                }
+                item { GymChallengesCard(state.challenges) }
+            }
+            if (state.recovery.isNotEmpty()) {
+                item { DiarySectionHeader(stringResource(R.string.gym_section_recovery)) }
+                item { GymRecoveryCard(state.recovery) }
+            }
             item { DiarySectionHeader(stringResource(R.string.diary_section_calendar)) }
             item {
                 GymCalendarCard(
@@ -192,10 +215,26 @@ fun GymScreen(viewModel: GymViewModel) {
                 )
             }
             item { DiarySectionHeader(stringResource(R.string.gym_recent_sessions)) }
+            if (state.sessions.isNotEmpty()) {
+                item {
+                    OutlinedTextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.medium,
+                        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                        placeholder = { Text(stringResource(R.string.gym_search_hint)) },
+                    )
+                }
+            }
+            val found = GymInsights.search(state.sessions, query)
             if (state.sessions.isEmpty()) {
                 item { GymEmptyCard() }
+            } else if (found.isEmpty()) {
+                item { DiaryNote(stringResource(R.string.gym_search_none)) }
             } else {
-                items(state.sessions.take(RECENT_SESSIONS), key = { it.key }) { session ->
+                items(found.take(if (query.isBlank()) RECENT_SESSIONS else SEARCH_RESULTS), key = { it.key }) { session ->
                     GymSessionCard(
                         session = session,
                         withTrainer = session.date in state.trainerDays,
@@ -216,6 +255,7 @@ fun GymScreen(viewModel: GymViewModel) {
 }
 
 private const val RECENT_SESSIONS = 20
+private const val SEARCH_RESULTS = 100
 
 @Composable
 private fun GymEmptyCard() {

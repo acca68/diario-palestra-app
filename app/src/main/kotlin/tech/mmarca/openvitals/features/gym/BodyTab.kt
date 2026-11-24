@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -121,6 +122,12 @@ fun BodyTab(viewModel: BodyViewModel) {
             }
             return@LazyColumn
         }
+        val weight = latest[BodyField.WEIGHT]
+        val fat = latest[BodyField.FAT_PERCENT]
+        if ((weight != null && state.targetWeight != null) || fat != null) {
+            item { DiarySectionHeader(stringResource(R.string.body_goals)) }
+            item { BodyGoalsCard(weight, state.startWeight, state.targetWeight, fat) }
+        }
         item { DiarySectionHeader(stringResource(R.string.body_details)) }
         item { BodySummaryCard(state.reports) }
         item {
@@ -214,7 +221,7 @@ private fun BodySummaryCard(reports: List<BodyReport>) {
                             Text(
                                 text = change?.let { it.value.bodyNumber() + if (field.unit.isNotEmpty()) " ${field.unit}" else "" } ?: "—",
                                 style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.SemiBold,
+                                fontWeight = figureWeight(),
                             )
                             DeltaText(field, change)
                         }
@@ -240,7 +247,7 @@ private fun BodyMapCard(reports: List<BodyReport>, group: BodyFieldGroup) {
             Text(
                 text = change?.let { "${it.value.bodyNumber()} ${field.unit}" } ?: "—",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = figureWeight(),
             )
             DeltaText(field, change)
         }
@@ -354,6 +361,48 @@ private fun BodyTrendCard(reports: List<BodyReport>, field: BodyField, onField: 
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                }
+            }
+        }
+    }
+}
+
+/** The weight on its way to the nutritionist's target, and body fat on a half-circle gauge. */
+@Composable
+private fun BodyGoalsCard(weight: Double?, start: Double?, target: Double?, fat: Double?) {
+    OpenVitalsCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            if (weight != null && target != null) {
+                val from = start ?: weight
+                val total = from - target
+                val done = from - weight
+                val progress = if (total == 0.0) 1f else (done / total).toFloat()
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.body_goal_now), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("${weight.bodyNumber()} kg", style = MaterialTheme.typography.titleLarge, fontWeight = figureWeight())
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(stringResource(R.string.body_goal_target), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("${target.bodyNumber()} kg", style = MaterialTheme.typography.titleLarge, fontWeight = figureWeight())
+                    }
+                }
+                DiaryProgressBar(progress)
+                val left = weight - target
+                Text(
+                    if (left > 0) stringResource(R.string.body_goal_left, left.bodyNumber(), from.bodyNumber()) else stringResource(R.string.body_goal_reached),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (fat != null) {
+                Text(stringResource(R.string.body_goal_fat), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Box(contentAlignment = Alignment.BottomCenter) {
+                    DiaryGauge(fat, 0.0, 40.0, 10.0..20.0)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("${fat.bodyNumber()} %", style = MaterialTheme.typography.headlineSmall, fontWeight = figureWeight())
+                        Text(stringResource(R.string.body_goal_fat_range), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
             }
         }

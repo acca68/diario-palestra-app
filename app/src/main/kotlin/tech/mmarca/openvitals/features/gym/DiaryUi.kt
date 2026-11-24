@@ -46,7 +46,7 @@ internal fun DiarySectionHeader(
     modifier: Modifier = Modifier,
     action: (@Composable RowScope.() -> Unit)? = null,
 ) {
-    if (LocalDiaryStyle.current == DiaryStyle.PASTEL) {
+    if (LocalDiaryStyle.current.soft) {
         Row(
             modifier = modifier.fillMaxWidth().heightIn(min = 40.dp).padding(top = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -117,7 +117,7 @@ internal fun DiaryStatsCard(stats: List<Pair<String, String>>) {
         Row(modifier = Modifier.padding(vertical = 16.dp, horizontal = 8.dp)) {
             stats.forEach { (value, label) ->
                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
-                    val pastel = LocalDiaryStyle.current == DiaryStyle.PASTEL
+                    val pastel = LocalDiaryStyle.current.soft
                     Text(value, style = if (pastel) DiaryType.pastelFigure else DiaryType.figure)
                     Text(
                         text = if (pastel) label else label.uppercase(),
@@ -163,7 +163,7 @@ internal fun DiaryHeroCard(
     stats: List<Pair<String, String>> = emptyList(),
     action: (@Composable () -> Unit)? = null,
 ) {
-    if (LocalDiaryStyle.current == DiaryStyle.PASTEL) {
+    if (LocalDiaryStyle.current.soft) {
         PastelHero(title, subtitle, stats, action)
         return
     }
@@ -269,7 +269,7 @@ private fun PastelHero(
 /** The tab's main action: a white pill on the blue lead card, a black one in the pastel style. */
 @Composable
 internal fun DiaryPill(text: String, icon: ImageVector? = null, onClick: () -> Unit) {
-    val pastel = LocalDiaryStyle.current == DiaryStyle.PASTEL
+    val pastel = LocalDiaryStyle.current.soft
     Button(
         onClick = onClick,
         shape = CircleShape,
