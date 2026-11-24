@@ -171,7 +171,15 @@ internal fun DiaryHeroCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.large)
-            .background(Brush.linearGradient(listOf(DiaryColors.heroStart, DiaryColors.heroEnd)))
+            .background(
+                LocalDiaryAccent.current.let { a ->
+                    if (a == DiaryAccent.BLUE.color) {
+                        Brush.linearGradient(listOf(DiaryColors.heroStart, DiaryColors.heroEnd))
+                    } else {
+                        Brush.linearGradient(listOf(a, androidx.compose.ui.graphics.lerp(a, Color.White, 0.18f)))
+                    }
+                },
+            )
             .padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
@@ -276,7 +284,7 @@ internal fun DiaryPill(text: String, icon: ImageVector? = null, onClick: () -> U
         colors = if (pastel) {
             ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary)
         } else {
-            ButtonDefaults.buttonColors(containerColor = DiaryColors.pill, contentColor = DiaryColors.onPill)
+            ButtonDefaults.buttonColors(containerColor = DiaryColors.pill, contentColor = LocalDiaryAccent.current)
         },
         contentPadding = ButtonDefaults.ContentPadding,
     ) {

@@ -64,6 +64,7 @@ class GymViewModel @Inject constructor(
     private val importStore: GymImportStore,
     private val trainerStore: TrainerStore,
     private val bodyStore: BodyReportStore,
+    @param:dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GymUiState())
@@ -115,7 +116,7 @@ class GymViewModel @Inject constructor(
                     .coerceAtMost(today.minusDays(MIN_HEALTH_CONNECT_DAYS))
                 val workouts = activityRepository.loadWorkoutsWithMetrics(from, today)
                 withContext(Dispatchers.Default) {
-                    GymSessions.build(workouts, imported) to imported.size
+                    GymSessions.build(workouts, imported, rules = SourceRulesPrefs.load(context)) to imported.size
                 }
             }.onSuccess { (sessions, importedCount) ->
                 val trainer = runCatching { trainerStore.load() }.getOrDefault(TrainerData())

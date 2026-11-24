@@ -25,7 +25,21 @@ enum class DiaryThemeMode { AUTO, LIGHT, DARK }
  * The two looks of the diary: BLUE (cream and royal blue, tabs on top) and PASTEL (soft
  * section colours, thin large titles, a home page of tiles, black pill buttons).
  */
-enum class DiaryStyle { BLUE, PASTEL }
+enum class DiaryStyle { BLUE, PASTEL, GLASS }
+
+/** The accent colours of the blue style. */
+enum class DiaryAccent(val color: Color, @param:androidx.annotation.StringRes val label: Int) {
+    BLUE(Color(0xFF3B5BDB), tech.mmarca.openvitals.R.string.accent_blue),
+    LIME(Color(0xFF6FAE16), tech.mmarca.openvitals.R.string.accent_lime),
+    GREEN(Color(0xFF2E9E62), tech.mmarca.openvitals.R.string.accent_green),
+    ORANGE(Color(0xFFE2702A), tech.mmarca.openvitals.R.string.accent_orange),
+    PURPLE(Color(0xFF7C4DDB), tech.mmarca.openvitals.R.string.accent_purple),
+    RED(Color(0xFFD23C45), tech.mmarca.openvitals.R.string.accent_red),
+    TEAL(Color(0xFF1C92A0), tech.mmarca.openvitals.R.string.accent_teal),
+}
+
+/** The accent in use (the blue style's lead card, pill and highlights read it). */
+internal val LocalDiaryAccent = androidx.compose.runtime.staticCompositionLocalOf { DiaryAccent.BLUE.color }
 
 /** The soft colours a section of the pastel style is washed with. */
 @androidx.compose.runtime.Immutable
@@ -55,6 +69,15 @@ internal object DiaryThemePrefs {
     private const val FILE = "diario_palestra_prefs"
     private const val KEY = "theme"
     private const val STYLE = "style"
+    private const val ACCENT = "accent"
+
+    fun loadAccent(context: Context): DiaryAccent =
+        context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getString(ACCENT, null)
+            ?.let { name -> DiaryAccent.entries.firstOrNull { it.name == name } } ?: DiaryAccent.BLUE
+
+    fun saveAccent(context: Context, accent: DiaryAccent) {
+        context.getSharedPreferences(FILE, Context.MODE_PRIVATE).edit().putString(ACCENT, accent.name).apply()
+    }
 
     fun loadStyle(context: Context): DiaryStyle =
         context.getSharedPreferences(FILE, Context.MODE_PRIVATE).getString(STYLE, null)
@@ -195,6 +218,59 @@ internal object DiaryColors {
         outlineVariant = Color(0xFF2E2E2C),
     )
 
+    /** The glass style: steel-blue ground, frosted see-through cards. */
+    val glassDark = darkColorScheme(
+        primary = Color(0xFF9DC1FF),
+        onPrimary = Color(0xFF0F1E30),
+        primaryContainer = Color(0x40A9C8F2),
+        onPrimaryContainer = Color(0xFFF2F6FB),
+        secondary = Color(0xFFB4C4D8),
+        onSecondary = Color(0xFF0F1E30),
+        secondaryContainer = Color(0x33FFFFFF),
+        onSecondaryContainer = Color(0xFFF2F6FB),
+        tertiary = Color(0xFFFFA36B),
+        onTertiary = Color(0xFF2A1404),
+        background = Color(0xFF13243A),
+        onBackground = Color(0xFFF2F6FB),
+        surface = Color(0xFF13243A),
+        onSurface = Color(0xFFF2F6FB),
+        surfaceVariant = Color(0x29FFFFFF),
+        onSurfaceVariant = Color(0xFFAFC2D8),
+        surfaceContainerLowest = Color(0x14FFFFFF),
+        surfaceContainerLow = Color(0x1FFFFFFF),
+        surfaceContainer = Color(0x24FFFFFF),
+        surfaceContainerHigh = Color(0x2EFFFFFF),
+        surfaceContainerHighest = Color(0x38FFFFFF),
+        outline = Color(0x66FFFFFF),
+        outlineVariant = Color(0x33FFFFFF),
+    )
+
+    val glassLight = lightColorScheme(
+        primary = Color(0xFF284B73),
+        onPrimary = Color.White,
+        primaryContainer = Color(0x6694B4DA),
+        onPrimaryContainer = Color(0xFF12263D),
+        secondary = Color(0xFF4F6580),
+        onSecondary = Color.White,
+        secondaryContainer = Color(0x99FFFFFF),
+        onSecondaryContainer = Color(0xFF12263D),
+        tertiary = Color(0xFFD9692B),
+        onTertiary = Color.White,
+        background = Color(0xFFDCE6F2),
+        onBackground = Color(0xFF12263D),
+        surface = Color(0xFFDCE6F2),
+        onSurface = Color(0xFF12263D),
+        surfaceVariant = Color(0x80FFFFFF),
+        onSurfaceVariant = Color(0xFF55697F),
+        surfaceContainerLowest = Color(0xB3FFFFFF),
+        surfaceContainerLow = Color(0x99FFFFFF),
+        surfaceContainer = Color(0x8CFFFFFF),
+        surfaceContainerHigh = Color(0xA6FFFFFF),
+        surfaceContainerHighest = Color(0xBFFFFFFF),
+        outline = Color(0x8055697F),
+        outlineVariant = Color(0x4055697F),
+    )
+
     val pastelShapes = Shapes(
         extraSmall = RoundedCornerShape(10.dp),
         small = RoundedCornerShape(14.dp),
@@ -224,9 +300,26 @@ internal fun DiaryTheme(
     mode: DiaryThemeMode,
     style: DiaryStyle = DiaryStyle.BLUE,
     tint: DiaryTint = DiaryTint.home,
+    accent: DiaryAccent = DiaryAccent.BLUE,
     content: @Composable () -> Unit,
 ) {
     val dark = isDiaryDark(mode)
+    if (style == DiaryStyle.GLASS) {
+        val scheme = if (dark) DiaryColors.glassDark else DiaryColors.glassLight
+        val ground = if (dark) listOf(Color(0xFF0E1B2C), Color(0xFF2B4A70)) else listOf(Color(0xFFC6D6EA), Color(0xFFF1F5FA))
+        val glow = if (dark) tint.firstDark.copy(alpha = 0.7f) else Color.White.copy(alpha = 0.7f)
+        MaterialTheme(colorScheme = scheme, shapes = DiaryColors.pastelShapes, typography = MaterialTheme.typography) {
+            Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(ground))) {
+                Box(
+                    modifier = Modifier.fillMaxSize().background(
+                        Brush.radialGradient(listOf(glow, Color.Transparent), center = androidx.compose.ui.geometry.Offset(900f, 300f), radius = 1000f),
+                    ),
+                )
+                CompositionLocalProvider(LocalContentColor provides scheme.onSurface, LocalDiaryStyle provides style) { content() }
+            }
+        }
+        return
+    }
     if (style == DiaryStyle.PASTEL) {
         val scheme = if (dark) DiaryColors.pastelDark else DiaryColors.pastelLight
         val a = if (dark) tint.firstDark else tint.first
@@ -249,7 +342,18 @@ internal fun DiaryTheme(
         }
         return
     }
-    val scheme = if (dark) DiaryColors.dark else DiaryColors.light
+    val base = if (dark) DiaryColors.dark else DiaryColors.light
+    val a = accent.color
+    val scheme = if (accent == DiaryAccent.BLUE) {
+        base
+    } else {
+        base.copy(
+            primary = if (dark) androidx.compose.ui.graphics.lerp(a, Color.White, 0.3f) else a,
+            onPrimary = if (dark) Color(0xFF101010) else Color.White,
+            primaryContainer = if (dark) androidx.compose.ui.graphics.lerp(a, Color.Black, 0.55f) else androidx.compose.ui.graphics.lerp(a, Color.White, 0.8f),
+            onPrimaryContainer = if (dark) androidx.compose.ui.graphics.lerp(a, Color.White, 0.85f) else androidx.compose.ui.graphics.lerp(a, Color.Black, 0.6f),
+        )
+    }
     val ground = if (dark) {
         listOf(Color(0xFF141311), Color(0xFF141311))
     } else {
@@ -257,7 +361,7 @@ internal fun DiaryTheme(
     }
     MaterialTheme(colorScheme = scheme, shapes = DiaryColors.shapes, typography = MaterialTheme.typography) {
         Box(modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(ground))) {
-            CompositionLocalProvider(LocalContentColor provides scheme.onSurface) { content() }
+            CompositionLocalProvider(LocalContentColor provides scheme.onSurface, LocalDiaryAccent provides a) { content() }
         }
     }
 }

@@ -289,3 +289,82 @@ class TrainersAndHealthTest {
         assertEquals(1, data.upcoming(today).size)
     }
 }
+
+class GymInsightsTest {
+
+    private fun session(date: LocalDate, exercises: List<ImportedExercise> = emptyList(), minutes: Long = 60) = GymSession(
+        key = date.toString(), title = "Upper", date = date, start = date.atTime(18, 0), durationMinutes = minutes,
+        caloriesKcal = 400.0, averageHeartRateBpm = null, watchSource = null, exercises = exercises,
+    )
+
+    private val bench = ImportedExercise("Bench Press (Barbell)", listOf(ImportedSet(kg = 100.0, reps = 10), ImportedSet(kg = 100.0, reps = 10)))
+    private val squat = ImportedExercise("Squat (Barbell)", listOf(ImportedSet(kg = 120.0, reps = 5)))
+
+    @Test
+    fun summaryStreakAndMilestones() {
+        val today = LocalDate.of(2026, 11, 24) // a Tuesday
+        val sessions = listOf(
+            session(LocalDate.of(2026, 11, 23), listOf(bench)),
+            session(LocalDate.of(2026, 11, 17)),
+            session(LocalDate.of(2026, 11, 10)),
+            session(LocalDate.of(2026, 10, 1)),
+            session(LocalDate.of(2026, 9, 1)),
+            session(LocalDate.of(2026, 9, 8)),
+            session(LocalDate.of(2026, 9, 15)),
+            session(LocalDate.of(2026, 9, 22)),
+        )
+        val month = GymInsights.summary(sessions, GymPeriod.MONTH, today)
+        assertEquals(3, month.sessions)
+        assertEquals(180L, month.minutes)
+        assertEquals(2000.0, month.volumeKg, 0.01)
+        assertEquals(1, GymInsights.summary(sessions, GymPeriod.WEEK, today).sessions)
+        assertEquals(8, GymInsights.summary(sessions, GymPeriod.ALL, today).sessions)
+        // September: four weeks in a row.
+        assertEquals(4, GymInsights.bestStreak(sessions))
+        val milestone = GymInsights.sessionMilestone(sessions, today)
+        assertEquals(10, milestone.next)
+        assertEquals(0.8f, milestone.progress, 0.001f)
+        assertEquals(R_WHALE_TIMES, GymInsights.comparison(300_000.0)!!.times, 0.001)
+    }
+
+    @Test
+    fun challengesAndRecovery() {
+        val today = LocalDate.of(2026, 11, 24)
+        val sessions = listOf(
+            session(LocalDate.of(2026, 11, 20), listOf(bench)),
+            session(LocalDate.of(2026, 11, 2), listOf(squat)),
+            session(LocalDate.of(2026, 10, 5), listOf(bench)),
+        )
+        val challenges = GymInsights.challenges(sessions, listOf(LocalDate.of(2026, 11, 7), LocalDate.of(2026, 11, 14)), today)
+        assertEquals(3, challenges.size)
+        assertEquals(2.0, challenges[0].current, 0.01)
+        // 2.6 t this month against 2 t in October: done.
+        assertTrue(challenges[1].done)
+        assertEquals(2.0, challenges[2].current, 0.01)
+
+        val hints = GymInsights.recovery(sessions, today)
+        // Legs last trained on 2 November: 22 days; chest on 20 November is too recent.
+        assertTrue(hints.any { it.group == MuscleGroup.QUADS && it.days == 22L })
+        assertTrue(hints.none { it.group == MuscleGroup.CHEST })
+    }
+
+    @Test
+    fun searchFindsByExerciseAndDate() {
+        val sessions = listOf(session(LocalDate.of(2026, 11, 20), listOf(bench)), session(LocalDate.of(2026, 11, 2), listOf(squat)))
+        assertEquals(1, GymInsights.search(sessions, "squat").size)
+        assertEquals(1, GymInsights.search(sessions, "20.11.2026").size)
+        assertEquals(2, GymInsights.search(sessions, "  ").size)
+    }
+
+    @Test
+    fun sourceRulesDecideTheGymApp() {
+        val rules = SourceRules(gymApps = setOf("hevy", "fitactive"), ignored = setOf("myfitnesspal"))
+        assertTrue(rules.isGymApp("com.fitactive.official"))
+        assertTrue(rules.isIgnored("com.myfitnesspal.android"))
+        assertEquals(false, rules.isGymApp("com.garmin.android.apps.connectmobile"))
+    }
+
+    private companion object {
+        const val R_WHALE_TIMES = 2.0
+    }
+}

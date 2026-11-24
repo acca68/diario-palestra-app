@@ -33,9 +33,11 @@ object GymSessions {
         healthConnect: List<ExerciseData>,
         imported: List<ImportedWorkout>,
         zone: ZoneId = ZoneId.systemDefault(),
+        rules: SourceRules = SourceRules(),
     ): List<GymSession> {
-        val hevy = healthConnect.filter { it.isFrom("hevy") }
-        val watch = healthConnect.filter { !it.isFrom("hevy") && !it.isFrom("myfitnesspal") }
+        val kept = healthConnect.filter { !rules.isIgnored(it.source) }
+        val hevy = kept.filter { rules.isGymApp(it.source) }
+        val watch = kept.filter { !rules.isGymApp(it.source) }
         val usedImports = mutableSetOf<String>()
         val usedWatch = mutableSetOf<String>()
 
@@ -200,7 +202,6 @@ object GymSessions {
             .filter { Duration.between(it.startTime, it.endTime).toMinutes() >= MIN_GYM_MINUTES }
             .minByOrNull { abs(Duration.between(LocalDateTime.ofInstant(it.startTime, zone), start).toMinutes()) }
 
-    private fun ExerciseData.isFrom(app: String): Boolean = source.contains(app, ignoreCase = true)
 
     fun stats(sessions: List<GymSession>, today: LocalDate = LocalDate.now()): GymStats {
         if (sessions.isEmpty()) return GymStats()
